@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="app-version" content="10">
+  <title>Indian Postcard Printer</title>
+  <!-- Cache-busting version: a new version fetches fresh files even if an
+       older copy is cached in the browser. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23f3e3bd'/%3E%3Crect x='6' y='6' width='14' height='20' fill='none' stroke='%2345646c' stroke-width='2'/%3E%3Crect x='18' y='9' width='9' height='14' fill='none' stroke='%2345646c' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css?v=10">
+  <!-- Dynamic @page rule per print mode (overlay = any paper, no scaling) -->
+  <style id="printPageRule">
+    @page { size: 143mm 93mm; margin: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Indian Postcard Printer</h1>
+    <span class="badge">Stage 7 &mdash; saved address book</span>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" class="tab active" id="tabFrontBtn" role="tab" aria-selected="true">Front</button>
+    <button type="button" class="tab" id="tabBackBtn" role="tab" aria-selected="false">Back</button>
+    <button type="button" class="tab" id="tabPrintBtn" role="tab" aria-selected="false">Print</button>
+  </nav>
+
+  <main>
+    <!-- ── Controls ─────────────────────────────────────────── -->
+    <section class="panel" aria-label="Postcard details">
+
+      <!-- ══ FRONT TAB ══════════════════════════════════════ -->
+      <div class="tab-panel" id="panelFront" role="tabpanel">
+        <div class="notice">
+          <strong>Preview is a layout approximation</strong> — not a guarantee of
+          physical print alignment. Test on ordinary paper before printing on
+          real postcards.
+        </div>
+
+        <fieldset class="fields" id="senderFields">
+          <legend>From address</legend>
+
+          <div class="entry-mode">
+            <span class="entry-mode-label">Entry</span>
+            <label class="radio">
+              <input type="radio" name="senderEntryMode" id="sEntryFull" value="full" checked>
+              <span>Full form</span>
+            </label>
+            <label class="radio">
+              <input type="radio" name="senderEntryMode" id="sEntrySingle" value="single">
+              <span>Single box</span>
+            </label>
+          </div>
+
+          <!-- Single-box mode: one line per printed line -->
+          <div class="single-box" id="sSingleBox" hidden>
+            <label for="sSingleInput">From address (one line per printed line)</label>
+            <textarea id="sSingleInput" rows="6" spellcheck="false" autocomplete="off"></textarea>
+            <p class="hint">While <strong>Single box</strong> is active this text is what prints.
+            Switching back to Full form clears it (you are asked first).</p>
+          </div>
+
+          <!-- Full-form mode: ONE field per printed line (5 lines + PIN).
+               Street/city/state fold into the line they print on. -->
+          <div class="grid2" id="sFullGrid">
+            <label for="sName">Name</label>
+            <textarea id="sName" rows="2" spellcheck="false" autocomplete="off"></textarea>
+            <label for="sHouse">House no. &amp; street / colony</label>
+            <textarea id="sHouse" rows="2" spellcheck="false" autocomplete="off"></textarea>
+            <label for="sArea">Area / village / town</label>
+            <textarea id="sArea" rows="2" spellcheck="false" autocomplete="off"></textarea>
+            <label for="sDistrict">District &amp; state</label>
+            <textarea id="sDistrict" rows="2" spellcheck="false" autocomplete="off"></textarea>
+          </div>
+
+          <!-- The PIN is its own box in BOTH entry modes. -->
+          <div class="grid2 pin-last">
+            <label for="sPin">PIN (optional)</label>
+            <input type="text" id="sPin" inputmode="numeric" maxlength="6"
+                   spellcheck="false" autocomplete="off" placeholder="—">
+          </div>
+          <p class="hint" id="senderCharHint"></p>
+          <div class="fitrow">
+            <button type="button" id="sTemplateBtn" class="small">Template 1: 🇮🇳 + From</button>
+            <label class="flagsize" for="flagFontPt" title="Size of the 🇮🇳 line — click the flag on the card to jump here">Flag (pt)
+              <input type="number" id="flagFontPt" min="6" max="30" step="1" value="16">
+            </label>
+            <span class="fit-badge" id="senderFit">Fits</span>
+            <span class="fit-detail" id="senderFitDetail"></span>
+          </div>
+        </fieldset>
+
+        <fieldset class="fields" id="recipientFields">
+          <legend>To address</legend>
+
+          <div class="entry-mode">
+            <span class="entry-mode-label">Entry</span>
+            <label class="radio">
+              <input type="radio" name="recipientEntryMode" id="rEntryFull" value="full" checked>
+              <span>Full form</span>
+            </label>
+            <label class="radio">
+              <input type="radio" name="recipientEntryMode" id="rEntrySingle" value="single">
+              <span>Single box</span>
+            </label>
+          </div>
+
+          <!-- Single-box mode: one line per printed line -->
+          <div class="single-box" id="rSingleBox" hidden>
+            <label for="rSingleInput">To address (one line per printed line)</label>
+            <textarea id="rSingleInput" rows="6" spellcheck="false" autocomplete="off"></textarea>
+            <p class="hint">While <strong>Single box</strong> is active this text is what prints.
+            Switching back to Full form clears it (you are asked first).</p>
+          </div>
+
+          <!-- Full-form mode: ONE field per printed line (5 lines + PIN).
+               Street/city/state fold into the line they print on. -->
+          <div class="grid2" id="rFullGrid">
+            <label for="rName">Recipient name</label>
+            <textarea id="rName" rows="2" spellcheck="false" autocomplete="off"></textarea>
+            <label for="rHouse">House no. &amp; street / colony</label>
+            <textarea id="rHouse" rows="2" spellcheck="false" autocomplete="off"></textarea>
+            <label for="rArea">Area / village / town</label>
+            <textarea id="rArea" rows="2" spellcheck="false" autocomplete="off"></textarea>
+            <label for="rDistrict">District &amp; state</label>
+            <textarea id="rDistrict" rows="2" spellcheck="false" autocomplete="off"></textarea>
+          </div>
+
+          <!-- The PIN is its own box in BOTH entry modes and feeds the
+               six printed PIN boxes, so it never joins the toggle. -->
+          <div class="grid2 pin-last">
+            <label for="rPin">PIN code (6 digits)</label>
+            <input type="text" id="rPin" inputmode="numeric" maxlength="6"
+                   spellcheck="false" autocomplete="off">
+          </div>
+          <p class="hint" id="recipientCharHint"></p>
+          <div class="fitrow">
+            <span class="fit-badge" id="recipientFit">Fits</span>
+            <span class="fit-detail" id="recipientFitDetail"></span>
+          </div>
+        </fieldset>
+
+        <!-- ══ Saved address book ═══════════════════════════════ -->
+        <fieldset class="calib" id="addressBook">
+          <legend>Saved addresses</legend>
+          <p class="hint">
+            Contacts are stored <strong>only in this browser</strong> (localStorage) and are
+            never sent anywhere. They contain address text only — no images.
+            Loading a contact simply fills the fields above.
+          </p>
+
+          <div class="ab-columns">
+            <!-- ── Recipients ── -->
+            <div class="ab-col">
+              <div class="ab-head"><strong>Saved recipients</strong>
+                <span class="ab-count" id="abRecipientCount">0</span></div>
+              <select id="abRecipientSelect" size="5" aria-label="Saved recipients"></select>
+              <div class="buttons ab-actions">
+                <button type="button" id="abRecipientLoadBtn" class="small">Load</button>
+                <button type="button" id="abRecipientEditBtn" class="small">Edit</button>
+                <button type="button" id="abRecipientDeleteBtn" class="small">Delete</button>
+              </div>
+              <label for="abRecipientName">Save the current To address as</label>
+              <input type="text" id="abRecipientName" placeholder="Display name"
+                     spellcheck="false" autocomplete="off">
+              <div class="buttons ab-actions">
+                <button type="button" id="abRecipientSaveBtn" class="small primary">Save current recipient</button>
+                <button type="button" id="abRecipientNewBtn" class="small">New recipient</button>
+              </div>
+              <div class="buttons ab-actions">
+                <button type="button" id="abCsvExportBtn" class="small">Export CSV</button>
+                <button type="button" id="abCsvImportBtn" class="small">Import CSV…</button>
+              </div>
+              <p class="hint" id="abCsvHint">
+                CSV columns (header row required, order may vary):
+                <code>Contact,Name,House,Building,Street,Area,City,District,State,PIN</code>.
+                <code>Contact</code> is the display name; a headerless file in the
+                nine field columns also works. Quotes and line breaks inside
+                values are supported.
+              </p>
+            </div>
+
+            <!-- ── Senders ── -->
+            <div class="ab-col">
+              <div class="ab-head"><strong>Saved senders</strong>
+                <span class="ab-count" id="abSenderCount">0</span></div>
+              <select id="abSenderSelect" size="5" aria-label="Saved senders"></select>
+              <div class="buttons ab-actions">
+                <button type="button" id="abSenderLoadBtn" class="small">Load</button>
+                <button type="button" id="abSenderEditBtn" class="small">Edit</button>
+                <button type="button" id="abSenderDeleteBtn" class="small">Delete</button>
+              </div>
+              <label for="abSenderName">Save the current From address as</label>
+              <input type="text" id="abSenderName" placeholder="Display name"
+                     spellcheck="false" autocomplete="off">
+              <div class="buttons ab-actions">
+                <button type="button" id="abSenderSaveBtn" class="small primary">Save current sender</button>
+                <button type="button" id="abSenderNewBtn" class="small">New sender</button>
+              </div>
+              <p class="hint">
+                Your own sender is kept unless you explicitly save or load one here.
+              </p>
+            </div>
+          </div>
+
+          <!-- ── Edit / New panel (never touches the card until you load) ── -->
+          <fieldset class="calib ab-edit" id="abEditPanel" hidden>
+            <legend id="abEditLegend">Edit recipient</legend>
+            <div class="notice" id="abEditNotice">
+              Changes here edit the <strong>saved contact only</strong>. The card above keeps
+              showing the address you last loaded until you click
+              <strong>Load onto card</strong>.
+            </div>
+            <label for="abEditName">Display name</label>
+            <input type="text" id="abEditName" spellcheck="false" autocomplete="off">
+            <div class="grid2 ab-edit-fields" id="abEditFields"></div>
+            <div class="fitrow">
+              <span class="fit-badge" id="abEditPinBadge">PIN —</span>
+              <span class="fit-detail" id="abEditSummary"></span>
+            </div>
+            <div class="buttons ab-actions">
+              <button type="button" id="abEditSaveBtn" class="small primary">Save to address book</button>
+              <button type="button" id="abEditLoadBtn" class="small">Load onto card</button>
+              <button type="button" id="abEditCancelBtn" class="small">Cancel</button>
+            </div>
+          </fieldset>
+
+          <!-- ── CSV import preview (confirm before anything is stored) ── -->
+          <div class="ab-csv-preview" id="abCsvPreview" hidden>
+            <div class="ab-head"><strong>CSV import preview</strong>
+              <span id="abCsvCount"></span></div>
+            <p class="hint" id="abCsvIntro"></p>
+            <div class="ab-table-wrap">
+              <table class="ab-table" id="abCsvTable">
+                <thead>
+                  <tr><th>Name</th><th>Address</th><th>PIN</th><th>Status</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="hint" id="abCsvWarnings"></p>
+            <label class="radio">
+              <input type="checkbox" id="abCsvSkipDupes" checked>
+              <span>Skip rows that match an existing contact (same name or PIN).
+              Turn this off to import them anyway as new contacts — existing
+              contacts are never overwritten.</span>
+            </label>
+            <div class="buttons ab-actions">
+              <button type="button" id="abCsvConfirmBtn" class="small primary">Import these contacts</button>
+              <button type="button" id="abCsvCancelBtn" class="small">Cancel</button>
+            </div>
+          </div>
+          <input type="file" id="abCsvFile" accept=".csv,text/csv,text/plain" hidden>
+        </fieldset>
+
+        <div class="field-row">
+          <div>
+            <label for="senderFontPt">From font (pt)</label>
+            <input type="number" id="senderFontPt" min="6" max="20" step="1" value="13">
+          </div>
+          <div>
+            <label for="recipientFontPt">To font (pt)</label>
+            <input type="number" id="recipientFontPt" min="6" max="20" step="1" value="13">
+          </div>
+          <div>
+            <label for="fontFamily">Card font</label>
+            <select id="fontFamily">
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+              <option value="Nirmala UI">Nirmala UI</option>
+            </select>
+          </div>
+          <div class="style-toggles" role="group"
+               aria-label="Bold, italic and underline for both addresses">
+            <label class="tgl" title="Bold"><input type="checkbox" id="fontBold">
+              <span aria-hidden="true"><b>B</b></span></label>
+            <label class="tgl" title="Italic"><input type="checkbox" id="fontItalic">
+              <span aria-hidden="true"><i>I</i></span></label>
+            <label class="tgl" title="Underline"><input type="checkbox" id="fontUnderline">
+              <span aria-hidden="true"><u>U</u></span></label>
+          </div>
+          <div class="fitbtnwrap">
+            <button type="button" id="fitTextBtn" class="small">Fit text</button>
+          </div>
+        </div>
+
+        <fieldset class="calib">
+          <legend>Calibration offsets (mm)</legend>
+          <div class="calib-grid">
+            <label for="offSenderXMm">From &rarr; X</label>
+            <input type="number" id="offSenderXMm" step="0.5" value="0">
+            <label for="offSenderYMm">From &rarr; Y</label>
+            <input type="number" id="offSenderYMm" step="0.5" value="0">
+            <label for="offRecipXMm">To &rarr; X</label>
+            <input type="number" id="offRecipXMm" step="0.5" value="0">
+            <label for="offRecipYMm">To &rarr; Y</label>
+            <input type="number" id="offRecipYMm" step="0.5" value="0">
+            <label for="offPinXMm">PIN &rarr; X</label>
+            <input type="number" id="offPinXMm" step="0.5" value="0">
+            <label for="offPinYMm">PIN &rarr; Y</label>
+            <input type="number" id="offPinYMm" step="0.5" value="0"
+                   title="0 = the 0.4 mm default margin; the value you type is added to it">
+          </div>
+          <button type="button" id="resetCalibBtn" class="small">Reset offsets to default</button>
+        </fieldset>
+
+        <details class="lines-editor">
+          <summary>Edit printed lines manually <span class="override-badge" id="overrideBadge" hidden>active</span></summary>
+          <p class="hint">Overrides the fields above. One line per row; blank rows are ignored.</p>
+          <label for="senderLinesInput">From address lines</label>
+          <textarea id="senderLinesInput" rows="4" spellcheck="false"></textarea>
+          <label for="recipientLinesInput">To address lines</label>
+          <textarea id="recipientLinesInput" rows="5" spellcheck="false"></textarea>
+          <button type="button" id="resetLinesBtn" class="small">Rebuild from fields</button>
+        </details>
+
+        <div class="buttons">
+          <button type="button" id="guidesBtn">Show guides</button>
+          <button type="button" id="actualBtn">Actual size</button>
+          <button type="button" id="refreshBtn" class="primary">Refresh preview</button>
+          <button type="button" id="saveBtn">Save settings</button>
+          <button type="button" id="exportBtn">Export JSON</button>
+          <button type="button" id="importBtn">Import JSON</button>
+        </div>
+      </div>
+
+      <!-- ══ BACK TAB ═══════════════════════════════════════ -->
+      <div class="tab-panel" id="panelBack" role="tabpanel" hidden>
+        <div class="notice">
+          <strong>The reverse is a blank card.</strong> The message is optional and the
+          image is optional — with both off, a completely blank reverse prints.
+          Uploaded images stay in this browser session and are never uploaded
+          anywhere; they are not saved unless you export settings (which stores
+          placement only).
+        </div>
+
+        <label for="messageInput">Message (optional)</label>
+        <textarea id="messageInput" rows="7" spellcheck="false"
+                  placeholder="Type your message here…"></textarea>
+        <div class="fitrow">
+          <span class="fit-badge" id="messageFit">Fits</span>
+          <span class="fit-detail" id="messageFitDetail"></span>
+        </div>
+
+        <fieldset class="calib">
+          <legend>Message layout (mm)</legend>
+          <div class="field-row">
+            <div>
+              <label for="backFontSize">Font (pt)</label>
+              <input type="number" id="backFontSize" min="6" max="20" step="1" value="9">
+            </div>
+            <div>
+              <label for="backLineSpacing">Line spacing</label>
+              <input type="number" id="backLineSpacing" min="4" max="12" step="0.5" value="7">
+            </div>
+            <div class="fitbtnwrap">
+              <button type="button" id="messageFitTextBtn" class="small">Fit text</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label for="backMarginLeft">Margin left</label>
+              <input type="number" id="backMarginLeft" min="0" max="30" step="0.5" value="8">
+            </div>
+            <div>
+              <label for="backMarginTop">Margin top</label>
+              <input type="number" id="backMarginTop" min="0" max="40" step="0.5" value="10">
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label for="backOffX">Calib. X</label>
+              <input type="number" id="backOffX" step="0.5" value="0">
+            </div>
+            <div>
+              <label for="backOffY">Calib. Y</label>
+              <input type="number" id="backOffY" step="0.5" value="0">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="calib">
+          <legend>Image (optional)</legend>
+          <div class="buttons">
+            <button type="button" id="imageUploadBtn" class="small">Upload image…</button>
+            <button type="button" id="imageRemoveBtn" class="small" disabled>Remove</button>
+            <button type="button" id="imageResetBtn" class="small" disabled>Reset image</button>
+            <label class="radio">
+              <input type="checkbox" id="imagePrintToggle">
+              <span>Print image (text-overlay mode)</span>
+            </label>
+          </div>
+          <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp" hidden>
+          <p class="hint" id="imageInfo">No image uploaded.</p>
+          <div class="field-row">
+            <div>
+              <label for="imgX">Position X (mm)</label>
+              <input type="number" id="imgX" step="1" value="25" disabled>
+            </div>
+            <div>
+              <label for="imgY">Position Y (mm)</label>
+              <input type="number" id="imgY" step="1" value="25" disabled>
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label for="imgW">Width (mm)</label>
+              <input type="number" id="imgW" min="5" step="1" value="60" disabled>
+            </div>
+            <div>
+              <label for="imgH">Height (mm)</label>
+              <input type="number" id="imgH" min="5" step="1" value="40" disabled>
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label for="imgRotate">Rotation (°)</label>
+              <input type="number" id="imgRotate" step="15" value="0" disabled>
+            </div>
+            <div class="fitbtnwrap">
+              <label class="radio">
+                <input type="checkbox" id="imgAspectLock" checked disabled>
+                <span>Lock aspect</span>
+              </label>
+            </div>
+          </div>
+          <fieldset class="crop">
+            <legend>Crop (% of image)</legend>
+            <div class="field-row">
+              <div>
+                <label for="cropLeft">Left</label>
+                <input type="number" id="cropLeft" min="0" max="99" step="1" value="0" disabled>
+              </div>
+              <div>
+                <label for="cropTop">Top</label>
+                <input type="number" id="cropTop" min="0" max="99" step="1" value="0" disabled>
+              </div>
+            </div>
+            <div class="fitrow">
+              <span class="fit-detail" id="cropInfo"></span>
+            </div>
+          </fieldset>
+          <div class="fitrow">
+            <span class="fit-badge" id="imageFit">Fits</span>
+            <span class="fit-detail" id="imageFitDetail"></span>
+          </div>
+        </fieldset>
+
+        <fieldset class="calib">
+          <legend>Message templates</legend>
+          <select id="templateSelect">
+            <option value="">— saved templates —</option>
+          </select>
+          <input type="text" id="templateName" placeholder="Template name" spellcheck="false">
+          <div class="buttons">
+            <button type="button" id="templateApplyBtn" class="small">Insert</button>
+            <button type="button" id="templateSaveBtn" class="small">Save current</button>
+            <button type="button" id="templateDeleteBtn" class="small">Delete</button>
+          </div>
+        </fieldset>
+
+        <div class="buttons">
+          <button type="button" id="gotoPrintBackBtn" class="print-btn">Print this side &rarr;</button>
+          <button type="button" id="refreshBackBtn" class="primary">Refresh preview</button>
+        </div>
+      </div>
+
+      <!-- ══ PRINT TAB ══════════════════════════════════════ -->
+      <div class="tab-panel" id="panelPrint" role="tabpanel" hidden>
+        <div class="notice">
+          <strong>Printing:</strong> the postcard prints at its exact size —
+          <strong>143 &times; 93 mm, landscape</strong> — with all app controls excluded.
+        </div>
+
+        <label>Side to print</label>
+        <div class="radio-col">
+          <label class="radio">
+            <input type="radio" name="printSide" id="printSideFront" value="front" checked>
+            <span>Front — addresses + PIN</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="printSide" id="printSideBack" value="back">
+            <span>Back — message + optional image</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="printSide" id="printSideBoth" value="both">
+            <span>Front and Back — two pages, front first</span>
+          </label>
+        </div>
+
+        <label>Print mode</label>
+        <div class="radio-col">
+          <label class="radio">
+            <input type="radio" name="printMode" id="printModeOverlay" value="overlay" checked>
+            <span><strong>Text overlay</strong> — print only my content on the
+            existing postcard (plus the image if enabled) <em>default</em></span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="printMode" id="printModeCard" value="card">
+            <span><strong>Full card</strong> — artwork + text on blank stock</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="printMode" id="printModeCalibration" value="calibration">
+            <span><strong>Calibration sheet</strong> — reference lines for measuring
+            your printer</span>
+          </label>
+        </div>
+        <p class="hint" id="printModeHint"></p>
+
+        <div class="buttons">
+          <button type="button" id="printBtn" class="print-btn">Print</button>
+        </div>
+
+        <div class="print-help" id="printHelp" hidden>
+          <strong>Before your first print:</strong>
+          <ol>
+            <li>Choose 100% / Actual size and turn <strong>off</strong>
+                "Fit to page".</li>
+            <li>Orientation <strong>landscape</strong>.</li>
+            <li>Turn <strong>on</strong> background graphics (full-card mode only —
+                text overlay prints no background).</li>
+            <li>Front and Back produces two 143 &times; 93 mm pages; most printers
+                need you to reinsert the card manually for the second side.</li>
+          </ol>
+          <p class="hint">
+            Browser scaling, paper size and printer margins all affect the physical
+            result — verify with the calibration sheet before real postcards.
+          </p>
+          <div class="print-help-actions">
+            <button type="button" id="printNowBtn" class="primary small">Print now</button>
+            <button type="button" id="printCancelBtn" class="small">Cancel</button>
+          </div>
+        </div>
+
+        <fieldset class="calib">
+          <legend>Active calibration (mm)</legend>
+          <dl class="offset-summary" id="offsetSummary"></dl>
+        </fieldset>
+
+        <p class="privacy">
+          Data stays in this browser. <button type="button" id="clearDataBtn"
+          class="small">Clear saved data</button>
+        </p>
+      </div>
+
+      <p class="status" id="status" role="status">Loading&hellip;</p>
+    </section>
+
+    <!-- ── Preview ──────────────────────────────────────────── -->
+    <section class="preview-pane" id="previewPane" aria-label="Postcard preview">
+      <div class="preview-scaler" id="previewScaler">
+
+        <!-- Front card: printed artwork + editable content -->
+        <div class="postcard" id="postcard">
+          <div class="card-layer card-artwork" aria-hidden="true">
+            <div class="divider"></div>
+            <div class="vheading">म.भा./SPP/HYD - 2022&nbsp;&nbsp;पोस्ट कार्ड&nbsp;&nbsp;POST CARD</div>
+            <div class="akam">
+              <div class="akam-top">
+                <span class="akam-75">75</span>
+                <svg class="akam-flag" viewBox="0 0 40 22" width="11mm" height="6mm" aria-hidden="true">
+                  <path d="M2 6 C12 1, 22 11, 38 5 L38 9 C22 15, 12 5, 2 10 Z" fill="#e79b3a"/>
+                  <path d="M2 10 C12 5, 22 15, 38 9 L38 13 C22 19, 12 9, 2 14 Z" fill="#f6f3ea"/>
+                  <path d="M2 14 C12 9, 22 19, 38 13 L38 17 C22 23, 12 13, 2 18 Z" fill="#3f8f4a"/>
+                  <circle cx="10" cy="9.5" r="3" fill="none" stroke="#2b4f6b" stroke-width="0.8"/>
+                </svg>
+              </div>
+              <div class="akam-hi">आज़ादी का</div>
+              <div class="akam-hi2">अमृत महोत्सव</div>
+            </div>
+            <div class="stamp">
+              <div class="stamp-denom">50<span class="stamp-p">पै.</span></div>
+              <div class="stamp-country">भारत<br>INDIA</div>
+              <svg class="stamp-portrait" viewBox="0 0 60 62" aria-hidden="true">
+                <defs>
+                  <pattern id="halftone" width="2.2" height="2.2" patternUnits="userSpaceOnUse">
+                    <circle cx="1.1" cy="1.1" r="0.55" fill="#45646c"/>
+                  </pattern>
+                </defs>
+                <rect x="0" y="0" width="60" height="62" fill="url(#halftone)" opacity="0.5"/>
+                <ellipse cx="30" cy="24" rx="13" ry="15" fill="#45646c"/>
+                <path d="M30 39 C18 39 10 48 8 62 L52 62 C50 48 42 39 30 39 Z" fill="#45646c"/>
+                <path d="M18 18 C19 10 41 10 42 18 L42 22 C40 16 20 16 18 22 Z" fill="#f3e3bd"/>
+              </svg>
+              <div class="stamp-name">अटल बिहारी वाजपेयी<br>ATAL BIHARI VAJPAYEE</div>
+            </div>
+            <div class="bars"></div>
+            <div class="ruled" id="ruledLines"></div>
+            <div class="art-pin-row" id="artPinRow"></div>
+            <div class="pin-label">पिन&nbsp;PIN</div>
+            <div class="bottom-note">(इस लाइन के नीचे न तो लिखें और न ही मुद्रित करें&nbsp;&nbsp;Do not write or print below this line)</div>
+            <div class="bottom-dashed"></div>
+          </div>
+          <div class="card-layer card-content">
+            <div class="sender-block" id="senderBlock" contenteditable="true"
+                 spellcheck="false"></div>
+            <div class="recipient-block" id="recipientBlock" contenteditable="true"
+                 spellcheck="false"></div>
+            <div class="pin-row" id="pinRow" tabindex="0" role="group"
+                 aria-label="PIN code, click and type 6 digits"></div>
+          </div>
+          <div class="card-layer card-guides" id="cardGuides" hidden>
+            <!-- Screen-only mm ruler along the card's top and left edges.
+                 Lives in the guides layer: hidden by default (it looked like a
+                 second scrollbar), shown again by the Show guides button. -->
+            <div class="card-ruler" id="cardRuler" aria-hidden="true"></div>
+            <div class="guide-sender-box" id="guideSenderBox"></div>
+            <div class="guide-h" id="guideH36"></div>
+            <div class="guide-h" id="guideH62"></div>
+            <div class="guide-v" id="guideV74"></div>
+          </div>
+        </div>
+
+        <!-- Back card: blank cream paper + optional message + optional image -->
+        <div class="postcard back" id="backcard" hidden>
+          <div class="card-layer back-artwork" aria-hidden="true">
+            <canvas class="back-image" id="backImageCanvas" hidden></canvas>
+          </div>
+          <div class="card-layer back-content">
+            <div class="back-message" id="backMessage"></div>
+          </div>
+        </div>
+
+        <!-- Calibration sheet: printed ONLY in calibration mode -->
+        <div class="calib-sheet" id="calibSheet" hidden>
+          <div class="calib-title">Calibration sheet — measure the printed lines with a ruler</div>
+          <div class="calib-rect">
+            <span class="calib-rect-tag">143 &times; 93 mm reference</span>
+            <!-- Printed mm ruler along the reference rectangle's top + left. -->
+            <div class="calib-ruler" id="calibRuler" aria-hidden="true"></div>
+          </div>
+          <div class="calib-hline">
+            <span class="calib-label">100 mm</span>
+          </div>
+          <div class="calib-vline">
+            <span class="calib-label">50 mm</span>
+          </div>
+          <div class="calib-note">Enter the measured lengths in the app before adjusting anything.</div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+
+  <!-- Script order matters: layout -> settings -> address -> addressbook -> preview -> app -->
+  <script src="js/layout.js?v=10"></script>
+  <script src="js/settings.js?v=10"></script>
+  <script src="js/address.js?v=10"></script>
+  <script src="js/addressbook.js?v=10"></script>
+  <script src="js/preview.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
+</body>
+</html>

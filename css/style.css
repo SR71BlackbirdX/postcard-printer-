@@ -1,0 +1,1318 @@
+/* Indian Postcard Printer — Stage 2 styles.
+ *
+ * The postcard is built as THREE separate layers inside .postcard:
+ *   1. .card-artwork  — the original printed design (never edited)
+ *   2. .card-content  — editable addresses + PIN digits
+ *   3. .card-guides   — optional calibration guides (hidden by default)
+ *
+ * All physical geometry lives in js/layout.js and reaches this file as
+ * CSS custom properties in millimetres. The browser draws mm units at the
+ * CSS standard 96 DPI (1 mm = 96 / 25.4 = 3.7795 px), so proportions stay
+ * true at any window size. Window scaling is a CSS transform only.
+ *
+ * The artwork (stamp, AKAM logo, vertical heading, ruled lines, labels,
+ * bottom note) is an APPROXIMATION traced from a reference photograph of
+ * the real yellow 50 paise card. The measured address/PIN geometry in
+ * layout.js remains the source of truth and is never derived from art.
+ */
+
+/* ── Defaults; JS overrides these from layout.js + settings ───────── */
+:root {
+  --card-w: 143mm;
+  --card-h: 93mm;
+  --divider-x: 74mm;
+  --sender-left: 8mm;          /* provisional */
+  --sender-top: 8mm;           /* provisional */
+  --recipient-left: 80mm;
+  --recipient-top: 28.8mm;
+  --recipient-w: 57mm;
+  --line-spacing: 6.5mm;
+  --pin-left: 91mm;
+  --pin-top: 62mm;
+  --pin-box-w: 8mm;
+  --pin-box-h: 6mm;
+  --font-size: 9pt;
+  --pin-font-size: 14pt;
+
+  /* Printed artwork (traced from the reference photo) */
+  --ink: #45646c;              /* dark teal printing ink */
+  --paper: #f3e3bd;            /* cream postcard paper */
+  --stamp-x: 105mm;
+  --stamp-y: 4mm;
+  --stamp-w: 23mm;
+  --stamp-h: 24mm;
+  --bars-x: 131.5mm;
+  --bars-y: 5mm;
+  --bars-w: 5.5mm;
+  --bars-h: 21mm;
+  --akam-x: 80mm;
+  --akam-y: 6mm;
+  --akam-w: 21mm;
+  --vheading-x: 75.5mm;
+  --vheading-y: 8mm;
+  --vheading-h: 52mm;
+  --pin-label-right: 89mm;     /* right edge of "पिन PIN" text */
+  --pin-label-cy: 65mm;        /* vertical centre of PIN boxes */
+  --ruled-from: 78mm;
+  --ruled-to: 139mm;
+  --note-x: 74.5mm;
+  --note-y: 70.2mm;
+  --note-w: 64.5mm;
+  --dashed-x: 74mm;
+  --dashed-y: 73.5mm;
+  --dashed-to: 139mm;
+
+  --accent: #2563eb;
+  --ui-ink: #1f2328;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--ui-ink);
+  background: #eef0f4;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #dfe3e8;
+}
+header h1 { font-size: 18px; margin: 0; }
+.badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+/* ── Two-column layout ───────────────────────────────────────────── */
+main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  /* One row, capped at the viewport: the row must NOT grow to content or
+     the whole document scrolls instead of the panel (see .panel below). */
+  grid-template-rows: minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  min-width: 0;
+}
+
+/* ── Control panel ───────────────────────────────────────────────── */
+.panel {
+  background: #ffffff;
+  border: 1px solid #dfe3e8;
+  border-radius: 10px;
+  padding: 16px;
+  overflow-y: auto;
+  min-height: 0;   /* grid items default to min-height:auto = no scrolling */
+}
+
+.notice {
+  font-size: 12.5px;
+  line-height: 1.45;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 14px 0 4px;
+}
+
+textarea,
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  font: 13.5px/1.45 "Segoe UI", Arial, sans-serif;
+  color: var(--ui-ink);
+  padding: 7px 9px;
+  border: 1px solid #c9d0d8;
+  border-radius: 6px;
+  background: #fbfcfe;
+}
+textarea:focus,
+input:focus {
+  outline: 2px solid #bfdbfe;
+  border-color: var(--accent);
+}
+textarea { resize: vertical; }
+
+/* Author styles (display: grid/flex/block) outrank the browser's own
+   [hidden] rule, which would leave "hidden" elements on screen. Make the
+   attribute authoritative so show/hide always works. */
+[hidden] { display: none !important; }
+
+.hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 6px 0 0;
+}
+.hint code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 11.5px;
+  /* Long tokens (e.g. the CSV column list) must wrap, or their min-content
+     width inflates the fieldset past the panel and the panel scrolls sideways. */
+  overflow-wrap: anywhere;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 84px;
+  gap: 10px;
+}
+.field-row .narrow input { text-align: center; }
+
+/* ── Calibration controls ────────────────────────────────────────── */
+.calib {
+  margin: 16px 0 0;
+  padding: 10px 12px 12px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+}
+.calib legend {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0 6px;
+}
+.calib-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  gap: 6px 8px;
+  align-items: center;
+}
+.calib-grid label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.calib-grid input { padding: 4px 6px; text-align: center; }
+
+button.small {
+  margin-top: 8px;
+  font: 600 12px "Segoe UI", Arial, sans-serif;
+  padding: 5px 10px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+button {
+  font: 600 13px "Segoe UI", Arial, sans-serif;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #c9d0d8;
+  background: #ffffff;
+  color: var(--ui-ink);
+  cursor: pointer;
+}
+button:hover { background: #f3f4f6; }
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+button.primary:hover { background: #1d4ed8; }
+button.print-btn {
+  background: #047857;
+  border-color: #047857;
+  color: #ffffff;
+}
+button.print-btn:hover { background: #065f46; }
+button.active {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+button.disabled,
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.status {
+  min-height: 1.2em;
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: #4b5563;
+}
+.status.error { color: #b91c1c; }
+
+/* ── First-print instruction panel ───────────────────────────────── */
+.print-help {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-left: 4px solid #059669;
+  border-radius: 6px;
+}
+.print-help ol { margin: 6px 0 4px; padding-left: 18px; }
+.print-help li { margin: 2px 0; }
+.print-help .hint { color: #6b7280; font-size: 11.5px; }
+.print-help-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ── Preview pane ────────────────────────────────────────────────── */
+.preview-pane {
+  background: #ffffff;
+  border: 1px solid #dfe3e8;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* The scaler reserves the on-screen space; the card is scaled into it. */
+.preview-scaler { position: relative; }
+
+.postcard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  width: var(--card-w);
+  height: var(--card-h);
+  background: var(--paper);           /* cream inland postcard paper */
+  border: 1px solid #e0cf9f;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+/* Every layer covers the whole card and stacks in DOM order. */
+.card-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.card-artwork { pointer-events: none; }   /* printed art is never edited */
+.card-guides { pointer-events: none; }
+
+/* ══ Layer 1: original printed artwork ═══════════════════════════ */
+
+/* Vertical divider at 74 mm from the card's left edge. */
+.divider {
+  position: absolute;
+  left: var(--divider-x);
+  top: 0;
+  bottom: 0;
+  margin-left: -0.2mm;
+  border-left: 0.4mm solid var(--ink);
+}
+
+/* Bilingual vertical heading beside the divider (reads bottom-to-top). */
+.vheading {
+  position: absolute;
+  left: var(--vheading-x);
+  top: var(--vheading-y);
+  height: var(--vheading-h);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: "Nirmala UI", "Segoe UI", Arial, sans-serif;
+  font-size: 2.3mm;
+  font-weight: 700;
+  letter-spacing: 0.1mm;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;             /* keep the heading clear of the PIN label */
+}
+
+/* AKAM "75 Azadi ka Amrit Mahotsav" logo block. */
+.akam {
+  position: absolute;
+  left: var(--akam-x);
+  top: var(--akam-y);
+  width: var(--akam-w);
+  color: var(--ink);
+}
+.akam-top {
+  display: flex;
+  align-items: center;
+  gap: 1.5mm;
+}
+.akam-75 {
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 11mm;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.5mm;
+}
+.akam-flag { flex: none; }
+.akam-hi {
+  font-family: "Nirmala UI", "Segoe UI", sans-serif;
+  font-size: 4.2mm;
+  font-weight: 700;
+  line-height: 1.05;
+  margin-top: 0.8mm;
+}
+.akam-hi2 {
+  font-family: "Nirmala UI", "Segoe UI", sans-serif;
+  font-size: 4.6mm;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+/* Printed 50 paise stamp (top-right). */
+.stamp {
+  position: absolute;
+  left: var(--stamp-x);
+  top: var(--stamp-y);
+  width: var(--stamp-w);
+  height: var(--stamp-h);
+  border: 0.35mm dashed var(--ink);   /* perforated-look edge */
+  background: var(--paper);
+  font-family: "Nirmala UI", "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+}
+.stamp-denom {
+  position: absolute;
+  top: 0.8mm;
+  left: 1mm;
+  font-size: 4mm;
+  font-weight: 800;
+  line-height: 1;
+}
+.stamp-p { font-size: 2.4mm; font-weight: 700; }
+.stamp-country {
+  position: absolute;
+  top: 0.8mm;
+  right: 1mm;
+  font-size: 2.3mm;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: right;
+}
+.stamp-portrait {
+  position: absolute;
+  left: 12%;
+  top: 16%;
+  width: 76%;
+  height: 58%;
+}
+.stamp-name {
+  position: absolute;
+  bottom: 0.8mm;
+  left: 0;
+  right: 0;
+  font-size: 1.9mm;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* Sorter identification bars at the far right edge. */
+.bars {
+  position: absolute;
+  left: var(--bars-x);
+  top: var(--bars-y);
+  width: var(--bars-w);
+  height: var(--bars-h);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--ink) 0 1.1mm,
+    transparent 1.1mm 1.75mm
+  );
+}
+
+/* Printed ruled address lines (one under each editable line). */
+.ruled { position: absolute; inset: 0; }
+.ruled-line {
+  position: absolute;
+  left: var(--ruled-from);
+  width: calc(var(--ruled-to) - var(--ruled-from));
+  height: 0;
+  border-top: 0.3mm solid var(--ink);
+}
+
+/* Printed PIN box outlines (the digits live in the content layer). */
+.art-pin-row {
+  position: absolute;
+  left: var(--pin-left);
+  top: var(--pin-top);
+  display: flex;
+  gap: 0;
+}
+.art-pin-box {
+  width: var(--pin-box-w);
+  height: var(--pin-box-h);
+  border-top: 0.4mm solid var(--ink);
+  border-bottom: 0.4mm solid var(--ink);
+  border-left: 0.4mm solid var(--ink);
+}
+.art-pin-box:last-child { border-right: 0.4mm solid var(--ink); }
+
+/* "पिन PIN" label to the left of the PIN boxes. */
+.pin-label {
+  position: absolute;
+  left: 0;
+  width: var(--pin-label-right);
+  top: var(--pin-label-cy);
+  transform: translateY(-50%);
+  padding-right: 2mm;
+  text-align: right;
+  font-family: "Nirmala UI", "Segoe UI", Arial, sans-serif;
+  font-size: 3.6mm;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Bottom bilingual instruction + dashed "do not write" line. */
+.bottom-note {
+  position: absolute;
+  left: var(--note-x);
+  top: var(--note-y);
+  width: var(--note-w);
+  font-family: "Nirmala UI", "Segoe UI", Arial, sans-serif;
+  font-size: 1.5mm;             /* small print, as on the real card */
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.bottom-dashed {
+  position: absolute;
+  left: var(--dashed-x);
+  top: var(--dashed-y);
+  width: calc(var(--dashed-to) - var(--dashed-x));
+  height: 0;
+  border-top: 0.4mm dashed var(--ink);
+}
+
+/* ══ Layer 2: editable content ═══════════════════════════════════ */
+
+.card-content {
+  color: #1b1b1b;
+  font-family: var(--card-font, Arial), "Nirmala UI", "Segoe UI", sans-serif;
+  font-size: var(--font-size);      /* default 9 pt */
+}
+
+.sender-block,
+.recipient-block {
+  position: absolute;
+  white-space: pre-line;
+  line-height: var(--line-spacing);
+}
+
+/* On-card editing: show it is clickable, but keep it invisible until
+   focused so the card looks exactly like the paper. */
+.sender-block,
+.recipient-block { cursor: text; }
+.sender-block:focus,
+.recipient-block:focus {
+  outline: 1px dashed #7a7a7a;
+  outline-offset: 0.5mm;
+}
+
+/* Template 1's 🇮🇳 line: its own size, and a pointer to say "click me".
+   Regional-indicator pairs MUST be drawn by an emoji font — the card font
+   (Arial etc.) has no flag glyph and falls back to the letters "IN". */
+.flag-line {
+  cursor: pointer;
+  font-family: "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji",
+               "Segoe UI Symbol", sans-serif;
+  font-variant-emoji: emoji;
+}
+
+/* Flag size field sits inline with the Template 1 button. */
+.flagsize {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5mm;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+.flagsize input { width: 12mm; }
+
+/* Bold / italic / underline: three small checkboxes dressed as buttons. */
+.style-toggles {
+  display: inline-flex;
+  gap: 0.6mm;
+}
+.tgl {
+  position: relative;   /* anchor for the hidden input below — WITHOUT this
+                           its containing block is the viewport, so it escapes
+                           .panel's scroll clip and makes the PAGE scroll. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 8mm;
+  height: 7mm;
+  border: 1px solid var(--line, #bbb);
+  border-radius: 1.2mm;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9em;
+  line-height: 1;
+}
+.tgl:has(input:checked) {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.tgl:has(input:focus-visible) { outline: 2px solid #2563eb; outline-offset: 1px; }
+.tgl input { position: absolute; opacity: 0; pointer-events: none; }
+
+.sender-block {
+  left: var(--sender-left);
+  top: var(--sender-top);
+  width: calc(var(--divider-x) - var(--sender-left) - 6mm);
+}
+
+.recipient-block {
+  left: var(--recipient-left);
+  top: var(--recipient-top);
+  width: var(--recipient-w);
+}
+
+/* Preview-only markers: never printed. */
+.sender-block.overflow::after,
+.recipient-block.overflow::after {
+  content: attr(data-overflow);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 0.4mm;
+  color: #c62828;
+  font-size: 2.8mm;
+  font-weight: bold;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Six touching PIN boxes: zero gaps, shared single dividing lines.
+   Note: the printed card already draws the box borders in the artwork
+   layer; here we draw the DIGITS. The box outlines below only render
+   when the artwork layer is unavailable (print fallback). */
+.pin-row {
+  position: absolute;
+  left: var(--pin-left);
+  top: var(--pin-top);
+  display: flex;
+  gap: 0;
+  cursor: text;
+}
+.pin-row:focus {
+  outline: 1px dashed #7a7a7a;
+  outline-offset: 0.5mm;
+}
+.pin-box {
+  width: var(--pin-box-w);
+  height: var(--pin-box-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--pin-font-size);
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ══ Layer 3: optional calibration guides (hidden by default) ════ */
+
+.card-guides[hidden] { display: none; }
+
+.guide-sender-box {
+  position: absolute;
+  left: var(--sender-left);
+  top: var(--sender-top);
+  width: calc(var(--divider-x) - var(--sender-left) - 6mm);
+  height: 22mm;
+  outline: 0.35mm dashed #e3a72c;    /* provisional sender region */
+}
+.guide-h {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-top: 0.25mm dashed rgba(37, 99, 235, 0.7);
+}
+.guide-v {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 0;
+  border-left: 0.25mm dashed rgba(37, 99, 235, 0.7);
+}
+
+/* ── Stale-file banner ─────────────────────────────────────────── */
+.stale-warning {
+  padding: 10px 16px;
+  font: 600 13px "Segoe UI", Arial, sans-serif;
+  color: #7f1d1d;
+  background: #fef2f2;
+  border-bottom: 2px solid #dc2626;
+  text-align: center;
+}
+.stale-warning kbd {
+  font: 600 11px monospace;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* ── Tabs (Front / Back / Print) ─────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #dfe3e8;
+}
+.tab {
+  font: 600 13px "Segoe UI", Arial, sans-serif;
+  padding: 10px 18px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: #4b5563;
+  cursor: pointer;
+}
+.tab:hover { color: #1f2328; background: #f6f7f9; }
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel[hidden] { display: none; }
+
+/* ── Back-side editor controls ───────────────────────────────────── */
+select {
+  width: 100%;
+  font: 13.5px/1.45 "Segoe UI", Arial, sans-serif;
+  color: var(--ui-ink);
+  padding: 7px 9px;
+  border: 1px solid #c9d0d8;
+  border-radius: 6px;
+  background: #fbfcfe;
+}
+
+.radio-row {
+  display: flex;
+  gap: 16px;
+  margin: 4px 0 8px;
+}
+.radio-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.radio-col .radio { align-items: flex-start; }
+.radio-col .radio input { margin-top: 2px; }
+.radio-col .radio span { font-size: 12.5px; font-weight: 400; line-height: 1.4; }
+.radio-col .radio em { color: #059669; font-style: normal; font-weight: 600; }.radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+}
+.radio input { width: auto; }
+
+.overflow-warning {
+  margin-top: 10px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 6px;
+}
+.overflow-actions { display: flex; gap: 8px; margin-top: 6px; }
+
+.offset-summary {
+  margin: 0;
+  font-size: 12.5px;
+  color: #4b5563;
+}
+.offset-summary div { display: flex; justify-content: space-between; }
+
+/* ── Back card (blank paper + optional message) ═════════════════ */
+.postcard.back { position: absolute; top: 0; left: 0; }
+
+.back-message {
+  position: absolute;
+  white-space: pre-line;
+  color: #1b1b1b;
+  font-family: var(--card-font, Arial), "Nirmala UI", "Segoe UI", sans-serif;
+}
+
+/* ── mm ruler on the card borders ═════════════════════════════════
+   Screen preview + the printed calibration sheet. Ticks every millimetre,
+   labelled every 10 mm. Never printed on a real card. */
+.card-ruler,
+.calib-ruler {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ruler-tick {
+  position: absolute;
+  background: #9a9a9a;
+}
+.ruler-tick.h {
+  top: 0;
+  width: 0.2mm;
+  height: 1mm;
+}
+.ruler-tick.v {
+  left: 0;
+  height: 0.2mm;
+  width: 1mm;
+}
+.ruler-tick.h.major { height: 2mm; background: #6a6a6a; }
+.ruler-tick.v.major { width: 2mm; background: #6a6a6a; }
+.ruler-label {
+  position: absolute;
+  color: #6a6a6a;
+  font-size: 1.8mm;
+  line-height: 1;
+}
+.ruler-label[style*="left"] { top: 2.2mm; transform: translateX(-1mm); }
+.ruler-label[style*="top"]  { left: 2.2mm; transform: translateY(-1mm); }
+/* The printed calibration sheet needs the ticks solid black to survive. */
+.calib-ruler .ruler-tick { background: #000000; }
+.calib-ruler .ruler-label { color: #000000; }
+
+/* ── Calibration sheet (test only) ══════════════════════════════ */
+.calib-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 143mm;
+  height: 93mm;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+  color: #111111;
+}
+.calib-title {
+  position: absolute;
+  top: 5mm;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 3mm;
+  font-weight: 700;
+}
+.calib-rect {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 143mm;
+  height: 93mm;
+  border: 0.3mm solid #111111;
+}
+.calib-rect-tag {
+  position: absolute;
+  top: 1.5mm;
+  left: 3mm;
+  font-size: 2.4mm;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.calib-hline {
+  position: absolute;
+  left: 21.5mm;
+  top: 45mm;
+  width: 100mm;
+  height: 0;
+  border-top: 0.4mm solid #111111;
+}
+.calib-vline {
+  position: absolute;
+  left: 71.5mm;
+  top: 21.5mm;
+  width: 0;
+  height: 50mm;
+  border-left: 0.4mm solid #111111;
+}
+.calib-hline .calib-label {
+  position: absolute;
+  left: 102mm;
+  top: -1.5mm;
+  font-size: 3mm;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.calib-vline .calib-label {
+  position: absolute;
+  left: 1.5mm;
+  top: -4mm;
+  font-size: 3mm;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.calib-note {
+  position: absolute;
+  bottom: 3mm;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 2.6mm;
+}
+
+/* ── Address entry mode: Full form vs Single box ──────────────────── */
+.entry-mode {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 10px;
+  padding: 6px 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+.entry-mode-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-right: 2px;
+}
+.single-box { margin: 0 0 4px; }
+.single-box label {
+  display: block;
+  margin: 0 0 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #4b5563;
+}
+.single-box textarea {
+  width: 100%;
+  padding: 5px 8px;
+  font: 13px/1.4 "Segoe UI", Arial, sans-serif;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.5;
+}
+/* Gap between the swappable field group and the always-visible PIN. */
+.pin-last { margin-top: 8px; }
+
+/* ── Address form fields ─────────────────────────────────────────── */
+.fields {
+  margin: 12px 0 0;
+  padding: 10px 12px 12px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+}
+.fields legend {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0 6px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.grid2 label {
+  margin: 0 0 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #4b5563;
+}
+.grid2 input,
+.grid2 textarea { padding: 5px 8px; font-size: 13px; }
+.grid2 textarea {
+  resize: vertical;
+  min-height: 30px;
+  line-height: 1.35;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.fitrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.fit-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+.fit-badge.warn {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+.fit-badge.bad {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.fit-detail {
+  font-size: 11.5px;
+  color: #6b7280;
+}
+.fitbtnwrap { display: flex; align-items: flex-end; }
+
+/* Manual lines editor */
+.lines-editor {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.lines-editor summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+.lines-editor[open] summary { margin-bottom: 6px; }
+
+.override-badge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  padding: 0 8px;
+  vertical-align: middle;
+}
+
+/* ── Address book (Stage 7) ───────────────────────────────────────── */
+/* The control panel is only ~380 px wide, so the two saved lists stack
+   (one column) instead of squeezing side by side. */
+.ab-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.ab-col {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fbfbfd;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ab-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.ab-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+  background: #eef2f7;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.ab-col select {
+  width: 100%;
+  min-height: 118px;
+  font-size: 12.5px;
+  padding: 4px 6px;
+}
+.ab-col label {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #4b5563;
+}
+.ab-col input { padding: 5px 8px; font-size: 13px; }
+/* Buttons row without the usual top margin — the rows are compact. */
+.ab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 0;
+}
+.ab-actions button.small { margin-top: 0; }
+.ab-edit {
+  margin-top: 12px;
+  background: #f8fafc;
+}
+.ab-edit-fields {
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+.ab-edit-fields label {
+  margin: 0 0 2px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #4b5563;
+}
+.ab-edit-fields input,
+.ab-edit-fields textarea {
+  padding: 4px 7px;
+  font-size: 12.5px;
+  min-height: 28px;
+}
+.ab-csv-preview {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  background: #fbfbfd;
+}
+.ab-table-wrap {
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  margin-top: 6px;
+}
+.ab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.ab-table th,
+.ab-table td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid #f1f3f5;
+  vertical-align: top;
+  white-space: pre-line;
+}
+.ab-table th {
+  position: sticky;
+  top: 0;
+  background: #f3f4f6;
+  font-size: 11.5px;
+  z-index: 1;
+}
+.ab-table td.ab-pin-ok { color: #047857; font-weight: 600; }
+.ab-table td.ab-pin-bad { color: #92400e; font-weight: 600; }
+.ab-table td.ab-pin-none { color: #6b7280; }
+
+/* Small screens: stack the address-book columns. */
+@media (max-width: 720px) {
+  .ab-columns { grid-template-columns: 1fr; }
+  .ab-edit-fields { grid-template-columns: 1fr; }
+}
+
+/* ── Back-side image layer ───────────────────────────────────────── */
+.back-image {
+  position: absolute;
+  display: block;
+}
+
+/* ── Small screens: stack the columns ────────────────────────────── */
+@media (max-width: 860px) {
+  /* Stacked, the panel sits above the preview and grows with its content —
+     let the PAGE scroll here instead of squeezing the panel into one row. */
+  main { grid-template-columns: 1fr; grid-template-rows: none; }
+  .preview-pane { min-height: 320px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   STAGE 3 — exact-size printing.
+   The printed page IS the postcard: 143 mm × 93 mm, landscape, at the
+   page origin. Nothing is scaled to fit paper. Screen-only chrome
+   (header, controls, shadows, guides, transforms) is removed.
+   !important is required to override the inline styles that the JS
+   preview scaling sets at runtime.
+   ══════════════════════════════════════════════════════════════════ */
+
+@media print {
+  /* Exact postcard page. 143 mm > 93 mm, so the page is landscape by
+     definition. margin: 0 puts the card at the page origin; the printer's
+     own hardware margins still apply and cannot be overridden by CSS. */
+  @page {
+    size: 143mm 93mm;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    display: block !important;
+    height: auto !important;
+    width: auto !important;
+  }
+
+  /* Hide application chrome; keep only the card being printed. */
+  body > header,
+  nav.tabs,
+  main > .panel {
+    display: none !important;
+  }
+
+  /* Preview-only overflow marker never reaches the paper. */
+  .sender-block.overflow::after,
+  .recipient-block.overflow::after {
+    display: none !important;
+  }
+
+  /* The mm ruler and the edit focus ring are preview-only. */
+  .card-ruler {
+    display: none !important;
+  }
+  .sender-block:focus,
+  .recipient-block:focus {
+    outline: none !important;
+  }
+
+  /* Print only the selected side (set before window.print()). */
+  body[data-print-side="back"] #postcard { display: none !important; }
+  body[data-print-side="front"] #backcard { display: none !important; }
+  body[data-print-side="front"] .postcard.back,
+  body[data-print-side="back"] .postcard:not(.back) {
+    display: none !important;
+  }
+  body[data-print-side="back"] .postcard.back { display: block !important; }
+
+  /* ── FRONT AND BACK: two 143 x 93 mm pages, front first ───────── */
+  body[data-print-side="both"] #postcard,
+  body[data-print-side="both"] #backcard { display: block !important; }
+  body[data-print-side="both"] #postcard {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  /* ── Back image prints only when explicitly enabled ──────────── */
+  .back-image[data-print-image="off"] { display: none !important; }
+
+  /* ── OVERLAY MODE (Stage 5) ─────────────────────────────────────
+     Print ONLY the editable text on top of the existing physical card.
+     The card's own printed design (background, border, divider, stamp,
+     emblem, heading, rules, PIN borders, label, notes) is NOT printed —
+     it already exists on the real postcard. */
+  body[data-print-mode="overlay"] .postcard {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  body[data-print-mode="overlay"] .card-artwork {
+    display: none !important;
+  }
+
+  /* ── CALIBRATION MODE (Stage 5) ─────────────────────────────────
+     Diagnostic sheet only: a 100 mm line, a 50 mm line and a 143 x 93 mm
+     reference rectangle. Never shown in normal or overlay printing. */
+  body[data-print-mode="calibration"] #postcard,
+  body[data-print-mode="calibration"] #backcard {
+    display: none !important;
+  }
+  body[data-print-mode="calibration"] .calib-sheet {
+    display: block !important;
+  }
+  body:not([data-print-mode="calibration"]) .calib-sheet {
+    display: none !important;
+  }
+  .calib-sheet .calib-title,
+  .calib-sheet .calib-note {
+    color: #000000;
+  }
+
+  main {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    grid-template-columns: none !important;
+    min-height: 0 !important;
+  }
+
+  .preview-pane {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: none !important;
+    overflow: visible !important;
+    min-width: 0 !important;
+  }
+
+  /* Neutralise the screen-preview scaler (its inline px size + the
+     card's inline transform are both removed — no JS resizing here). */
+  .preview-scaler {
+    position: static !important;
+    width: 143mm !important;
+    height: 93mm !important;
+  }
+
+  /* The card prints at its exact physical size.
+     position: relative (NOT static) keeps the absolutely-positioned
+     layers and the divider contained within the card box. */
+  .postcard {
+    position: relative !important;
+    transform: none !important;
+    width: 143mm !important;
+    height: 93mm !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    /* Print the yellow paper background where the browser allows it
+       (the user must enable "background graphics" in the print dialog). */
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Never print the calibration guides or the guides-only sender box. */
+  .card-guides {
+    display: none !important;
+  }
+
+  /* Layers keep stacking over the full card. */
+  .card-artwork,
+  .card-content {
+    pointer-events: auto;
+  }
+}
