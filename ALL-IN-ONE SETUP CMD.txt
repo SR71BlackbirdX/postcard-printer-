@@ -1,0 +1,53 @@
+OPTIONAL: ALL-IN-ONE SETUP COMMAND
+(Third way to set up - one single CMD command)
+
+This is an EXTRA option. You do not need it if the two .bat files
+(INSTALL_POSTCARD_PRINTER.bat / START_POSTCARD_PRINTER.bat) already work
+for you. Use this if you want everything created in one go.
+
+WHAT IT DOES (automatic):
+1. Checks for Node.js.
+2. Installs Node.js LTS if missing (needs internet + winget).
+3. Finds the postcard-printer folder on your Desktop.
+4. Moves it into your Documents folder.
+5. Installs npm dependencies if package.json exists.
+6. Creates START_POSTCARD_PRINTER.bat (the launcher).
+7. Creates SETUP_POSTCARD_PRINTER.bat (a setup confirmation file).
+
+HOW TO USE:
+
+1. Open Command Prompt (press Windows key, type cmd, press Enter).
+2. Copy the ENTIRE command below.
+3. Paste it into the black window (right-click = Paste).
+4. Press Enter and wait until it says: SUCCESS! Setup complete.
+
+THE COMMAND:
+------------------------------------------------------------------
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $src=Join-Path $env:USERPROFILE 'Desktop\postcard-printer'; $dst=Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'postcard-printer'; if (!(Get-Command winget -ErrorAction SilentlyContinue) -and !(Get-Command node -ErrorAction SilentlyContinue)) { throw 'winget is unavailable. Install Node.js from https://nodejs.org first.' }; if (!(Get-Command node -ErrorAction SilentlyContinue)) { winget install --id OpenJS.NodeJS.LTS -e --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -ne 0) { throw 'Node.js installation failed. Open a new CMD and run this setup again.' }; $env:Path += ';'+$env:ProgramFiles+'\nodejs' }; if (!(Test-Path (Join-Path $dst 'server.js'))) { if (!(Test-Path (Join-Path $src 'server.js'))) { throw 'Project not found. Put postcard-printer on your Desktop first.' }; if (!(Test-Path $dst)) { Move-Item $src $dst } else { throw 'Documents already contains a folder named postcard-printer without server.js. Please check it first.' } }; Set-Location $dst; if (Test-Path 'package.json') { npm install; if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' } }; $setup='@echo off`r`ntitle Postcard Printer Setup`r`necho Setup is complete!`r`npause`r`n'; $start='@echo off`r`ntitle Postcard Printer`r`ncd /d "%USERPROFILE%\Documents\postcard-printer"`r`nif not exist server.js (echo ERROR: server.js not found & pause & exit /b 1)`r`necho Starting Postcard Printer...`r`nstart "" http://127.0.0.1:5173/`r`nnode server.js`r`npause`r`n'; Set-Content -Path (Join-Path $dst 'SETUP_POSTCARD_PRINTER.bat') -Value $setup -Encoding ASCII; Set-Content -Path (Join-Path $dst 'START_POSTCARD_PRINTER.bat') -Value $start -Encoding ASCII; Write-Host 'SUCCESS! Setup complete.' -ForegroundColor Green; Write-Host ('Project location: '+$dst); Write-Host 'Double-click START_POSTCARD_PRINTER.bat to open the application.'"
+------------------------------------------------------------------
+
+AFTER SETUP IS COMPLETE:
+
+1. Open Documents.
+2. Open the postcard-printer folder.
+3. Double-click START_POSTCARD_PRINTER.bat.
+4. The server starts and the browser opens at http://127.0.0.1:5173/
+
+No need to type commands again! Just double-click START whenever you
+want to use it.
+
+IMPORTANT NOTES:
+- The command looks for the project on your DESKTOP
+  (Desktop\postcard-printer). If your folder is somewhere else, the
+  command stops with "Project not found" - move the folder to the
+  Desktop first, or use the two .bat files instead.
+- The launcher opens the browser immediately, so occasionally you may
+  need to refresh the page if the server has not started yet.
+- It MOVES the folder from Desktop to Documents (it is not a copy).
+- If winget is unavailable, install Node.js manually from
+  https://nodejs.org and run the command again.
+
+WHICH OPTION SHOULD I USE?
+- Easiest / no moving of folders:  INSTALL_POSTCARD_PRINTER.bat + START_POSTCARD_PRINTER.bat (in this folder)
+- One single command, folder moves to Documents:  the all-in-one command above
+- No installation at all:  double-click index.html (see "Postcard Printer - How to Install.txt")
