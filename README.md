@@ -90,6 +90,14 @@ calibration sheet from Stage 5.
 | --- | --- |
 | ![Text overlay print output](tests/print-overlay-front.png) | ![Calibration sheet output](tests/print-calibration.png) |
 
+| Filled-in card | Back side with image |
+| --- | --- |
+| ![Front card with sender and recipient addresses filled in](tests/e2e-shots/02-front-filled.png) | ![Back of the card with a message and a placed image](tests/e2e-shots/05-back-with-image.png) |
+
+| Address book |
+| --- |
+| ![Saved addresses panel with a loaded contact](tests/e2e-ab-shots/05-final.png) |
+
 ## Getting Started
 
 ### Prerequisites
@@ -104,7 +112,12 @@ build step. The app is plain HTML + CSS + vanilla JavaScript.
 
 ### Installation
 
-1. Clone or download this repository.
+1. Clone or download this repository:
+
+   ```powershell
+   git clone https://github.com/SR71BlackbirdX/postcard-printer-.git
+   ```
+
 2. Open a terminal in the project folder:
 
    ```powershell
@@ -210,6 +223,30 @@ not claimed unless your driver supports it and you have tested it.
 **Print dialog settings:** choose 100 % / Actual size, disable "Fit to
 page", set orientation landscape, and enable background graphics (full-card
 mode only).
+
+### Set up the printer once (custom page type, landscape only)
+
+The card is **143 × 93 mm**, which is wider than it is tall — a landscape
+page. Most printers do not ship with this size, so add it once in Windows:
+
+1. **Settings → Bluetooth & devices → Printers & scanners** → your printer →
+   **Printing preferences** (or **Printer properties → Printing
+   preferences**).
+2. Open the **Paper/Quality** tab (wording varies by driver) and set
+   **Paper size** to **User Defined / Custom**.
+3. Create a new page type: **width 143 mm, height 93 mm**. Name it
+   `Postcard 143x93` and save it.
+4. Still in Printing preferences, set **Orientation → Landscape**, then apply.
+
+Select `Postcard 143x93` as the paper size every time you print; the app
+requests the same 143 × 93 mm page from CSS, so the browser and the driver
+agree on the size and orientation. If your driver offers a "lock" or "set as
+default" option for orientation, use it so portrait can no longer be picked.
+
+**Why this matters:** if the printer stays on A4/Letter portrait, the browser
+scales the card to fit and every measurement comes out wrong — this is the
+usual cause of a print measuring short. Confirm with the **calibration
+sheet** after changing the page type.
 
 ### Why the print may measure smaller
 
