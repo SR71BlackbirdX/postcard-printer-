@@ -1279,6 +1279,9 @@
     // Clicking the 🇮🇳 line on the card adjusts its size: the caret would be
     // useless inside a one-emoji line, so aim the user at the Flag field.
     const senderBlock = document.getElementById('senderBlock');
+    // The Template 1 button draws the same vector flag as the card.
+    const btnFlag = el.sTemplateBtn.querySelector('.btn-flag');
+    if (btnFlag) btnFlag.innerHTML = flagInnerSvg();
     const flagTarget = (e) => (e.target.closest ? e.target.closest('.flag-line') : null);
     senderBlock.addEventListener('mousedown', (e) => {
       if (flagTarget(e)) e.preventDefault();   // never park the caret on the flag

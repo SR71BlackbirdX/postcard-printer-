@@ -15,6 +15,40 @@
 // Template 1's first line is just the 🇮🇳 emoji; it carries its own size.
 const FLAG_LINE_RE = /^\u{1F1EE}\u{1F1F3}\s*$/u;
 const DEFAULT_FLAG_PT = 16;
+
+// Windows has no country-flag glyphs: Segoe UI Emoji deliberately omits
+// them, so the 🇮🇳 regional-indicator pair always falls back to the two
+// letters "IN". The flag is therefore drawn as a vector. The emoji text
+// still goes into the DOM — on-card editing reads innerText back and would
+// otherwise drop the line — and CSS paints it transparent.
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Inner markup of the flag: tricolour field + 24-spoke Ashoka Chakra. */
+function flagInnerSvg() {
+  let spokes = '';
+  for (let i = 0; i < 24; i++) {
+    const a = (i * 15) * Math.PI / 180;
+    spokes += 'M45 30L' + (45 + 7.5 * Math.cos(a)).toFixed(2) + ' ' +
+              (30 + 7.5 * Math.sin(a)).toFixed(2);
+  }
+  return '<rect width="90" height="20" fill="#ff9933"/>' +
+         '<rect y="20" width="90" height="20" fill="#ffffff"/>' +
+         '<rect y="40" width="90" height="20" fill="#138808"/>' +
+         '<path d="' + spokes + '" stroke="#000080" stroke-width="0.9"/>' +
+         '<circle cx="45" cy="30" r="7.5" fill="none" stroke="#000080" ' +
+         'stroke-width="1.2"/>' +
+         '<circle cx="45" cy="30" r="1.4" fill="#000080"/>';
+}
+
+/** A vector <svg> of the flag; CSS sizes it in em, so Flag (pt) scales it. */
+function flagSvg(className) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', className);
+  svg.setAttribute('viewBox', '0 0 90 60');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.innerHTML = flagInnerSvg();
+  return svg;
+}
 const measureCtx = document.createElement('canvas').getContext('2d');
 
 // Family + weight used to MEASURE text. Must match the CSS the card draws
@@ -264,11 +298,14 @@ function renderAddressBlock(kind, state, badgeId, detailId) {
     visible.forEach((line, i) => {
       if (i > 0) block.appendChild(document.createTextNode('\n'));
       if (i === 0 && FLAG_LINE_RE.test(line)) {
-        // Template 1's 🇮🇳 line prints at its own size (click it on the card).
+        // Template 1's flag line prints at its own size (click it on the
+        // card). Vector flag first, then the emoji text kept beside it so
+        // the value still round-trips through innerText.
         const flag = document.createElement('span');
         flag.className = 'flag-line';
         flag.style.fontSize = (state.flagFontPt || DEFAULT_FLAG_PT) + 'pt';
-        flag.textContent = line;
+        flag.appendChild(flagSvg('flag-glyph'));
+        flag.appendChild(document.createTextNode(line));
         block.appendChild(flag);
       } else {
         block.appendChild(document.createTextNode(line));

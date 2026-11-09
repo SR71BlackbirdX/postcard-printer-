@@ -541,14 +541,28 @@ button:disabled {
   outline-offset: 0.5mm;
 }
 
-/* Template 1's 🇮🇳 line: its own size, and a pointer to say "click me".
-   Regional-indicator pairs MUST be drawn by an emoji font — the card font
-   (Arial etc.) has no flag glyph and falls back to the letters "IN". */
+/* Template 1's flag line: its own size, and a pointer to say "click me".
+   Windows has no flag glyphs in Segoe UI Emoji (Microsoft omits them
+   deliberately), so 🇮🇳 always renders as the letters "IN". A vector flag
+   is drawn instead; the emoji text is kept for copy/export/on-card editing
+   but painted transparent, so only the flag is seen. */
 .flag-line {
   cursor: pointer;
   font-family: "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji",
                "Segoe UI Symbol", sans-serif;
   font-variant-emoji: emoji;
+  color: transparent;
+}
+/* 3:2 field, sized in em so it follows the Flag (pt) control. */
+.flag-glyph {
+  width: 1.2em;
+  height: 0.8em;
+  vertical-align: -0.12em;
+}
+.btn-flag {
+  width: 1.5em;
+  height: 1em;
+  vertical-align: -0.2em;
 }
 
 /* Flag size field sits inline with the Template 1 button. */

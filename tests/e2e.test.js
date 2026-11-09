@@ -538,9 +538,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   check('Template 1: keeps the address below it',
     stripNl(tplAfter) === ['🇮🇳', 'From'].concat(tplLines).join('\n'),
     JSON.stringify(stripNl(tplAfter)));
-  const tplPlain = await page.evaluate(() =>
-    document.querySelector('#senderBlock .in-flag, #senderBlock img, #senderBlock svg') === null);
-  check('Template 1: flag stays plain emoji text (no photo/graphic)', tplPlain, String(tplPlain));
+  const tplFlag = await page.evaluate(() => ({
+    svg: !!document.querySelector('#senderBlock .flag-line .flag-glyph'),
+    bands: document.querySelectorAll('#senderBlock .flag-glyph rect').length,
+    chakra: document.querySelectorAll('#senderBlock .flag-glyph circle').length,
+    emoji: (document.querySelector('#senderBlock .flag-line') || {}).textContent
+  }));
+  check('Template 1: flag draws as a vector (tricolour + chakra, not the letters IN)',
+    tplFlag.svg && tplFlag.bands === 3 && tplFlag.chakra >= 1, JSON.stringify(tplFlag));
+  check('Template 1: emoji text is kept so the value still round-trips',
+    !!tplFlag.emoji && tplFlag.emoji.includes('\u{1F1EE}\u{1F1F3}'),
+    JSON.stringify(tplFlag.emoji));
   await page.click('#sTemplateBtn');
   const tplRestored = await page.evaluate(() => ({
     text: document.getElementById('senderBlock').textContent,
