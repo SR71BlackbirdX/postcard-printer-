@@ -346,11 +346,12 @@ starts its own server.
 | `address.test.js` | 37 — field assembly, omitted optionals, multi-line fields, measured wrapping, word preservation, too-wide words, fit status, Fit-text behaviour | no |
 | `html.smoke.test.js` | 18 — element ids (unique), file references, defaults, print button, no image persistence, settings upgrade | no |
 | `addressbook.test.js` | 103 — contacts, duplicates, persistence, corrupt data, CSV parse/round-trip/import warnings, PIN validation | no |
-| `preview.visual.test.js` | 191 — rendered geometry, artwork, three print modes, side selection, fitting, image editing, address book | yes |
-| `e2e.test.js` | 90 — full workflow on a real server + Edge: HTTP behaviour, page/panel scrolling, forms, fitting, back image, templates, 5-line capacity, card PIN typing, font toggles, rulers, calibration, all print modes/sides, settings persistence, export/import | yes |
+| `preview.visual.test.js` | 197 — rendered geometry, artwork, three print modes, side selection, fitting, image editing, address book, live calibration summary, preview-vs-print position, offset clamping, char hints | yes |
+| `e2e.test.js` | 91 — full workflow on a real server + Edge: HTTP behaviour, page/panel scrolling, forms, fitting, back image, templates, 5-line capacity, card PIN typing, font toggles, rulers, calibration, all print modes/sides, settings persistence, export/import | yes |
 | `addressbook.e2e.test.js` | 67 — save/load/edit/delete, exact card round-trip (including addresses typed straight onto the card), CSV import/export, reload, corrupt storage | yes |
+| `edge.e2e.test.js` | 14 — failure paths: non-image upload, corrupt settings import, HTML/unicode injection into an address, 600-char line, rapid tab switching, corrupt settings + address-book storage, no page/console errors | yes |
 
-**Total: 548 checks, 0 failures.**
+**Total: 569 checks, 0 failures.**
 
 `layout.test.js` verifies: card size, section widths summing to 143 mm, the
 48 mm PIN row, edge-to-edge PIN boxes with zero gaps, the six boxes fitting
@@ -442,7 +443,9 @@ saved with the other settings and can be reset to 0 with one click.
    on ordinary paper is the only way to confirm real alignment.
 2. **Background colour needs "background graphics" enabled** in the print
    dialog; otherwise the card prints without its yellow paper.
-3. **Preview ≠ print.** The preview is a layout approximation.
+3. **Layout matches, ink may not.** Screen and print rules place every
+   element at the same millimetre position — measured to 0.000 mm. What
+   differs afterwards is the printer's own margin, not the page layout.
 4. **Artwork is approximate** — positions were traced from a photograph,
    not measured. Adjust them in `js/layout.js` → `artwork` if your card
    differs. The stamp portrait is a generic silhouette, not the official

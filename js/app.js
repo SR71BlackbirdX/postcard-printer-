@@ -270,13 +270,13 @@
     // Calibration offsets.
     Object.keys(OFFSET_KEYS).forEach((id) => {
       const raw = Number(document.getElementById(id).value);
-      if (!Number.isFinite(raw)) {
-        state.offsets[OFFSET_KEYS[id]] = DEFAULT_SETTINGS.offsets[OFFSET_KEYS[id]];
-        return;
-      }
       // PIN Y is entered relative to its 0.4 mm default.
       const value = id === 'offPinYMm' ? raw + PIN_Y_BASE_MM : raw;
-      state.offsets[OFFSET_KEYS[id]] = Math.round(value * 10) / 10;
+      // Front offsets must reach past ~30 mm or the recipient's
+      // "Outside printable area" guard (layout.js threshold) could never
+      // fire; 50 mm still catches a typo such as 400.
+      state.offsets[OFFSET_KEYS[id]] = Math.round(
+        clampNum(value, -50, 50, DEFAULT_SETTINGS.offsets[OFFSET_KEYS[id]]) * 10) / 10;
     });
 
     // Back-side message layout.

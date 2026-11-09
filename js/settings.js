@@ -163,8 +163,10 @@ function sanitizeSettings(raw) {
   out.offsets = {};
   Object.keys(DEFAULT_SETTINGS.offsets).forEach((key) => {
     const v = Number(rawOffsets[key]);
+    // ±50 mm: must exceed the ~30 mm that makes the recipient's
+    // "Outside printable area" guard reachable, and match readForm exactly.
     const clamped = Number.isFinite(v)
-      ? Math.min(20, Math.max(-20, v))
+      ? Math.min(50, Math.max(-50, v))
       : DEFAULT_SETTINGS.offsets[key];
     out.offsets[key] = Math.round(clamped * 10) / 10;
   });

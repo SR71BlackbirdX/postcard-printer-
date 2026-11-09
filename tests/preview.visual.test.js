@@ -655,6 +655,25 @@ const round = (n) => Math.round(n * 100) / 100;
     await page.fill('#offRecipXMm', '0');
     await page.waitForTimeout(120);
 
+    // ── Live clamping and load-time sanitising must agree ──────────
+    // A typo like 400 used to apply as 400 on screen and come back as 20
+    // after a reload. Both paths must clamp identically, and stay above
+    // the ~30 mm the "Outside printable area" guard above needs to fire.
+    const loadClamped = await page.evaluate(() =>
+      sanitizeSettings({ offsets: { recipientX: 400, recipientY: -400 } }).offsets);
+    check('Calibration: load-time sanitiser clamps offsets to ±50 mm',
+      loadClamped.recipientX === 50 && loadClamped.recipientY === -50,
+      JSON.stringify(loadClamped));
+
+    await page.fill('#offRecipXMm', '400');
+    await page.waitForTimeout(150);
+    const liveClamped = await page.evaluate(() =>
+      document.getElementById('recipientBlock').style.transform);
+    check('Calibration: typing 400 mm applies the same 50 mm clamp',
+      /translate\(50mm/.test(liveClamped), liveClamped);
+    await page.fill('#offRecipXMm', '0');
+    await page.waitForTimeout(120);
+
     // ── Back image: upload, move, resize, crop, rotate, toggle ────
     await page.click('#tabBackBtn');
     await page.waitForTimeout(100);
