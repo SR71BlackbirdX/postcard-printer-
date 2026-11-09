@@ -1,25 +1,12 @@
-<p align="center">
-  <h1 align="center">Indian Postcard Printer</h1>
-  <p align="center">
-    Compose and print exact-size Indian inland postcards (143 × 93 mm) — front addresses and PIN boxes, blank reverse with an optional image — straight from your browser.
-  </p>
-</p>
+# 🇮🇳 Indian Postcard Printer
 
-<p align="center">
-  <img src="https://img.shields.io/badge/dependencies-none-brightgreen?style=flat-square" alt="No dependencies">
-  <img src="https://img.shields.io/badge/build-step-none-brightgreen?style=flat-square" alt="No build step">
-  <img src="https://img.shields.io/badge/vanilla-JavaScript-blue?style=flat-square" alt="Vanilla JavaScript">
-  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?style=flat-square" alt="Windows 10/11">
-  <img src="https://img.shields.io/badge/privacy-100%25%20local-purple?style=flat-square" alt="100% local — nothing is uploaded">
-</p>
+### Design. Personalise. Print. — Exact-size Indian Inland Postcards.
 
-<p align="center">
-  <a href="#getting-started">Getting Started</a> ·
-  <a href="#usage">Usage</a> ·
-  <a href="#printing">Printing</a> ·
-  <a href="#tests">Tests</a> ·
-  <a href="#known-limitations">Known Limitations</a>
-</p>
+A free, open-source, privacy-first application for creating and printing Indian inland postcards at their original physical size of **143 × 93 mm**.
+
+Create beautifully formatted postcards with structured sender and recipient addresses, six-digit PIN boxes, custom typography, an optional back-side image, and precise printer calibration — all directly in your browser.
+
+**No installation dependencies. No cloud. No subscriptions. No data uploads.**
 
 ---
 
@@ -86,385 +73,550 @@ calibration sheet from Stage 5.
 | --- | --- |
 | ![Front of the postcard with addresses and PIN boxes](tests/postcard.png) | ![Full application preview](tests/preview-full.png) |
 
-| Text overlay print | Calibration sheet |
+The application reports whether an address fits, is too wide, contains too many lines or extends outside the printable area.
+
+### 📖 Address Book
+
+Save frequently used sender and recipient addresses.
+
+- Save and load contacts.
+- Edit and delete saved contacts.
+- CSV import and export.
+- Duplicate‑contact warnings.
+- PIN validation.
+- CSV parsing with quoted fields and embedded line breaks.
+- Exact address round‑tripping.
+
+Exported CSV files include a UTF‑8 BOM for improved spreadsheet compatibility.
+
+### 🖼️ Back‑Side Image Editor
+
+Personalise the reverse side of your postcard with an optional image.
+
+Supported formats:
+
+- PNG
+- JPEG
+- WebP
+
+Image editing controls:
+
+- X/Y positioning in millimetres.
+- Width and height adjustment.
+- Aspect‑ratio locking.
+- Rotation.
+- Crop percentages.
+- Printable‑area clipping warnings.
+
+Images are rendered on a high‑resolution canvas.
+
+**Important:** Uploaded image pixels remain in the current browser session. They are never saved to localStorage, exported or uploaded.
+
+### 🖨️ Three Printing Modes
+
+Choose the printing method that suits your requirements.
+
+| Mode | Purpose |
 | --- | --- |
-| ![Text overlay print output](tests/print-overlay-front.png) | ![Calibration sheet output](tests/print-calibration.png) |
+| **Text Overlay** | Print only addresses, PIN digits, message and optional image |
+| **Full Card** | Print the complete postcard design at 143 × 93 mm |
+| **Calibration Sheet** | Verify physical printer measurements and alignment |
 
-| Filled-in card | Back side with image |
+Printing options:
+
+- Front only.
+- Back only.
+- Front and Back.
+- Independent calibration offsets for each side.
+- Actual‑size printing without application‑level scaling.
+
+### 🎯 Printer Calibration
+
+Fine‑tune the position of editable postcard content using independent horizontal and vertical offsets.
+
+- X‑axis adjustment.
+- Y‑axis adjustment.
+- Separate front and back calibration.
+- Live calibration preview.
+- Persistent calibration settings.
+- Reset offsets to zero.
+
+A calibration sheet provides:
+
+- 100 mm horizontal reference line.
+- 50 mm vertical reference line.
+- 143 × 93 mm postcard outline.
+
+This helps identify printer scaling and alignment problems before printing on actual postcard stock.
+
+### 💾 Settings and Backup
+
+Your application settings stay in your browser.
+
+- Save settings locally.
+- Export settings as JSON.
+- Import previously exported settings.
+- Restore defaults.
+- Clear saved application data.
+
+No database or external storage service is required.
+
+---
+
+## 📸 Screenshots
+
+Screenshots are included in the repository to demonstrate the application and its printing workflow.
+
+| Screenshot | Description |
 | --- | --- |
-| ![Front card with sender and recipient addresses filled in](tests/e2e-shots/02-front-filled.png) | ![Back of the card with a message and a placed image](tests/e2e-shots/05-back-with-image.png) |
+| **Front Card** | Postcard front with sender and recipient sections |
+| **Full Preview** | Complete application preview |
+| **Text Overlay** | Text‑only printing output |
+| **Calibration Sheet** | Printer measurement reference |
+| **Filled Postcard** | Example with completed addresses |
+| **Back Side** | Reverse side with optional image |
+| **Address Book** | Saved contact management |
 
-| Address book |
-| --- |
-| ![Saved addresses panel with a loaded contact](tests/e2e-ab-shots/05-final.png) |
+_Replace these descriptions with actual GitHub‑hosted screenshot images when adding them to the repository._
 
-## Getting Started
+---
 
-### Prerequisites
+## 💻 Getting Started
 
-- **Windows 10 / 11**
-- **Microsoft Edge or Google Chrome** (any modern browser works)
-- **[Node.js](https://nodejs.org/)** — used only for the local dev server
-  and the tests. No particular version is required; any recent release works.
+### Requirements
 
-There is **nothing to install** — no `npm install`, no dependencies, no
-build step. The app is plain HTML + CSS + vanilla JavaScript.
+- Windows 10 or Windows 11.
+- Microsoft Edge or Google Chrome.
+- Node .js (only required for the local development server and tests).
 
-### Installation
+The application uses:
 
-1. Clone or download this repository:
+- HTML
+- CSS
+- Vanilla JavaScript
+- Node.js built‑in HTTP module
 
-   ```powershell
-   git clone https://github.com/SR71BlackbirdX/postcard-printer-.git
-   ```
+There are no production dependencies, no build tools and no framework installation.
 
-2. Open a terminal in the project folder:
+### Option 1: Quick Installation
 
-   ```powershell
-   cd postcard-printer
-   ```
+1. Download or clone this repository.
+2. Open the project folder.
+3. Double‑click:
 
-That is the entire installation.
+   `INSTALL_POSTCARD_PRINTER.bat`
 
-### Run the app
+4. Follow the instructions displayed by the setup script.
+5. Start the application using:
 
-Start the built-in dev server (Node's standard `http` module only):
+   `START_POSTCARD_PRINTER.bat`
 
-```powershell
+The repository also includes an optional all‑in‑one CMD setup guide.
+
+### Option 2: Manual Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/SR71BlackbirdX/postcard-printer-.git
+```
+
+Navigate into the project:
+
+```bash
+cd postcard-printer-
+```
+
+Start the local server:
+
+```bash
 node server.js
 ```
 
-Then open **<http://127.0.0.1:5173/>** in Edge or Chrome. The server binds
-to `127.0.0.1` only — it is never exposed to the public network.
+Open your browser and visit:
 
-**To stop the server:** press **Ctrl+C** in the terminal where it is
-running (the port is released immediately).
+```text
+http://127.0.0.1:5173/
+```
 
-Notes:
+That's it!
 
-- The default port is **5173**. If it is already occupied, the server stops
-  and reports that clearly; it will **not** silently switch ports. To use
-  another port on purpose: `$env:PORT=5174; node server.js`
-- The server serves only the project folder, returns **404** for missing
-  files, **403** for directory-traversal attempts, and **405** for
-  non-GET/HEAD methods, and disables caching so your edits always show up.
-- You can still double-click `index.html` to open it directly; the server
-  is only needed for the localhost URL and for running the browser tests.
+No `npm install` is required.
 
-### Optional: browser tests
+### Running Without the Server
 
-The visual and end-to-end suites use **Playwright**. It is a
-development-only, optional tool — the app never needs it. The tests look
-for Playwright in the local `node_modules` first, then in the global npm
-install:
+You can also double‑click `index.html` to open the application directly in Edge or Chrome.
 
-```powershell
+The local server is recommended for development and browser testing.
+
+---
+
+## 📝 How to Use
+
+The application has three main sections.
+
+### 1. Front
+
+- Enter sender information.
+- Enter recipient information.
+- Add the six‑digit recipient PIN.
+- Select fonts and formatting.
+- Adjust text size.
+- Use **Fit Text** to automatically find a suitable font size.
+- Fine‑tune positioning using calibration controls.
+
+You can also click directly on an address in the postcard preview and edit it.
+
+### 2. Back
+
+- Add an optional message.
+- Choose a message template.
+- Upload an optional image.
+- Adjust image size, position, rotation and cropping.
+- Configure message typography and spacing.
+
+The reverse side remains blank cream paper when no content is added.
+
+### 3. Print
+
+Select:
+
+- Side to print: Front, Back or Front and Back.
+- Print mode: Text Overlay, Full Card or Calibration Sheet.
+
+Review the preview and print using the appropriate printer settings.
+
+---
+
+## 🖨️ Printing Guide
+
+For accurate physical dimensions, printer configuration is important.
+
+### Required Paper Size
+
+Create a custom paper size in Windows printer preferences:
+
+| Setting | Value |
+| --- | --- |
+| Width | 143 mm |
+| Height | 93 mm |
+| Orientation | Landscape |
+| Paper name | Postcard 143×93 |
+
+Typical Windows navigation:
+
+Settings → Bluetooth & devices → Printers & scanners → Your printer → Printing preferences.
+
+Find the custom paper‑size option and create the new page type.
+
+### Recommended Print Settings
+
+| Setting | Recommendation |
+| --- | --- |
+| Paper Size | Postcard 143×93 |
+| Orientation | Landscape |
+| Scaling | 100 % / Actual Size |
+| Fit to Page | Disabled |
+| Background Graphics | Enabled for Full Card |
+| Margins | 0 for Full Card |
+
+The exact setting names depend on the printer driver.
+
+### Printing Both Sides
+
+The Front and Back option creates two separate pages.
+
+For ordinary printers:
+
+1. Print the front.
+2. Reinsert the postcard manually.
+3. Print the back.
+
+Automatic duplex printing depends on printer and driver support and should be tested separately.
+
+### Calibration Before Printing
+
+Before using actual postcard stock, print the calibration sheet on ordinary paper.
+
+Measure:
+
+- The 100 mm horizontal line.
+- The 50 mm vertical line.
+- The 143 × 93 mm rectangle.
+
+If the measurements are incorrect, check the printer's custom paper size, orientation, margins and scaling settings.
+
+**Important:** CSS can request exact dimensions, but it cannot override physical printer margins or prevent printer‑driver scaling.
+
+---
+
+## ⚙️ How It Works
+
+The postcard is constructed using three independent layers:
+
+| Layer | Responsibility |
+| --- | --- |
+| `.card‑artwork` | Original postcard design |
+| `.card‑content` | Editable addresses and PIN digits |
+| `.card‑guides` | Optional calibration guides and rulers |
+
+All physical measurements are maintained centrally in:
+
+`js/layout.js`
+
+This provides a single source of truth for the postcard's dimensions and layout.
+
+### Technology Stack
+
+- HTML5
+- CSS3
+- Vanilla JavaScript
+- Node.js built‑in HTTP server
+- Browser localStorage
+- Canvas API
+- Playwright for optional browser testing
+
+### Physical Measurement System
+
+The postcard uses CSS millimetre units.
+
+The standard CSS conversion is:
+
+```text
+1 mm = 96 / 25.4 CSS pixels
+```
+
+The preview uses CSS transforms for screen scaling without changing the underlying physical dimensions.
+
+---
+
+## 🔐 Privacy & Security
+
+Privacy is a core design principle.
+
+**The application runs locally on your computer.**
+
+- No cloud storage.
+- No external APIs.
+- No analytics.
+- No tracking.
+- No account registration.
+- No address uploads.
+- No image uploads.
+
+### What Is Stored?
+
+| Data | Storage |
+| --- | --- |
+| Sender and recipient addresses | Browser localStorage |
+| Saved contacts | Browser localStorage |
+| Fonts and formatting | Browser localStorage |
+| Calibration offsets | Browser localStorage |
+| Message templates | Browser localStorage |
+| Image placement settings | Browser localStorage |
+| Uploaded image pixels | Current browser session only |
+
+Exported JSON settings contain placement settings but never uploaded image pixels.
+
+For security information, see **SECURITY.md**.
+
+---
+
+## 🧪 Testing
+
+The project includes automated unit, visual and end‑to‑end tests.
+
+The documented test suite currently reports:
+
+<details>
+<summary><strong>569 checks across the listed test suites — 0 failures</strong></summary>
+
+| Test Suite | Checks | Browser Required |
+| --- | --- | --- |
+| `layout.test.js` | 42 | No |
+| `address.test.js` | 37 | No |
+| `html.smoke.test.js` | 18 | No |
+| `addressbook.test.js` | 103 | No |
+| `preview.visual.test.js` | 197 | Yes |
+| `e2e.test.js` | 91 | Yes |
+| `addressbook.e2e.test.js` | 67 | Yes |
+| `edge.e2e.test.js` | 14 | Yes |
+| **Total** | **569** |  |
+
+The tests cover:
+
+- Postcard dimensions and layout geometry.
+- Address wrapping and text fitting.
+- PIN‑box alignment.
+- Address‑book operations.
+- CSV import and export.
+- Settings persistence.
+- Image editing.
+- Printing modes.
+- Calibration offsets.
+- Browser workflows.
+- Invalid uploads and corrupted settings.
+- HTML and Unicode injection handling.
+- Failure‑path behaviour.
+
+</details>
+
+### Run Basic Tests
+
+Node.js is required.
+
+```bash
+node --check server.js
+node tests/layout.test.js
+node tests/address.test.js
+node tests/html.smoke.test.js
+node tests/addressbook.test.js
+```
+
+### Run Browser Tests
+
+Playwright is optional and required only for browser‑based suites.
+
+Install it globally:
+
+```bash
 npm install -g playwright
 ```
 
-No browser download is needed — the suites use the **already-installed
-Edge** via Playwright's `channel: "msedge"`.
+The browser suites use the already‑installed Microsoft Edge through Playwright's `msedge` channel.
 
-## Usage
+Run the suites individually:
 
-The app has three tabs:
-
-| Tab | What it does |
-| --- | --- |
-| **Front** | Sender/recipient address forms (or one box each), per-address fonts, nine-family card font with bold/italic/underline, calibration offsets, optional manual line editing; the card itself is editable too — click an address and type. |
-| **Back** | Optional message, optional image with full placement controls, message templates. |
-| **Print** | Choose Front / Back / Front-and-Back, choose the print mode, see the active offsets, clear saved data. |
-
-**Address forms** use four printed-line fields — **Name**, **House no. &
-street / colony**, **Area / village / town**, **District & state** — plus
-the PIN. They print as the card's ruled lines: `name` / `house, street` /
-`area, city` / `district, state`. Every field accepts multiple lines —
-press Enter inside a field and each line keeps its own printed line. The
-recipient PIN is not repeated in the address — it belongs in the six boxes,
-which you can type straight onto the card. Each address can also be
-entered as one box (*Single box* mode).
-
-The card prints **4 ruled lines** (as measured on real stock); a 5th line
-is accepted and prints below the last rule. Nothing is silently clipped
-and no overlapping lines are ever printed. Template 1's 🇮🇳 line has its
-own size (click the flag on the card).
-
-**Back side** — the reverse prints as blank cream paper at exactly
-143 × 93 mm unless you add an optional message or an optional image.
-Message font size, line spacing and margins are adjustable; overflow is
-warned about in the same way as the addresses. Front and back keep
-**independent** calibration offsets so the card can be turned over and fed
-back through the printer with per-side correction.
-
-**Back-side image** — upload PNG/JPEG/WebP, then control position (X/Y mm),
-size (W/H mm) with aspect ratio locked by default, rotation, and crop
-percentages. The image is drawn to a high-resolution canvas, so the file is
-never re-encoded and quality is preserved. Parts outside the 143 × 93 mm
-boundary are clipped and flagged. Images stay in the browser session only —
-pixel data is never saved to storage or exported; only placement settings
-and the *Print image* flag persist. In text-overlay mode the image prints
-only when *Print image* is on.
-
-## Printing
-
-The **Print** tab has two settings — *Side to print* and *Print mode*:
-
-| Mode | Page setup | Output |
-| --- | --- | --- |
-| **Text overlay** *(default)* | printer's own paper, content at 100% — no scaling | **Only your content**: sender/recipient/PIN text (front) or message + optional image (back). No background, artwork, rules or PIN borders. |
-| **Full card** | exact `@page 143mm × 93mm`, margin 0 | The complete card design + text on blank stock. |
-| **Calibration sheet** | printer's own paper, 12 mm margin | A 100 mm horizontal line, a 50 mm vertical line and a 143 × 93 mm rectangle. **Test only.** |
-
-**Front and Back** produces two separate 143 × 93 mm pages (front first,
-with a forced page break). Most ordinary printers need you to reinsert the
-sheet/card manually to print the second side — automatic duplex printing is
-not claimed unless your driver supports it and you have tested it.
-
-**Print dialog settings:** choose 100 % / Actual size, disable "Fit to
-page", set orientation landscape, and enable background graphics (full-card
-mode only).
-
-### Set up the printer once (custom page type, landscape only)
-
-The card is **143 × 93 mm**, which is wider than it is tall — a landscape
-page. Most printers do not ship with this size, so add it once in Windows:
-
-1. **Settings → Bluetooth & devices → Printers & scanners** → your printer →
-   **Printing preferences** (or **Printer properties → Printing
-   preferences**).
-2. Open the **Paper/Quality** tab (wording varies by driver) and set
-   **Paper size** to **User Defined / Custom**.
-3. Create a new page type: **width 143 mm, height 93 mm**. Name it
-   `Postcard 143x93` and save it.
-4. Still in Printing preferences, set **Orientation → Landscape**, then apply.
-
-Select `Postcard 143x93` as the paper size every time you print; the app
-requests the same 143 × 93 mm page from CSS, so the browser and the driver
-agree on the size and orientation. If your driver offers a "lock" or "set as
-default" option for orientation, use it so portrait can no longer be picked.
-
-**Why this matters:** if the printer stays on A4/Letter portrait, the browser
-scales the card to fit and every measurement comes out wrong — this is the
-usual cause of a print measuring short. Confirm with the **calibration
-sheet** after changing the page type.
-
-### Why the print may measure smaller
-
-Your first print measured **136 × 86 mm** against the 143 × 93 mm target
-(width suggests +5.15 %, height +8.14 %). Because the two axes differ, a
-uniform scale factor would be a guess — so the app does **not** compensate
-automatically. Instead, print the **calibration sheet** and measure:
-
-1. the **100 mm** horizontal line
-2. the **50 mm** vertical line
-3. the **143 × 93 mm** rectangle
-
-If those also measure short, the browser/printer is scaling uniformly; if
-they measure correctly, the problem is the page size or margins instead.
-Report the three measurements and the cause can be identified before any
-correction is applied.
-
-**Honest limitation:** CSS can only *request* dimensions — printer drivers
-may impose unprintable margins or apply their own scaling, and no CSS can
-override hardware margins.
-
-## How It Works
-
-### Three layers
-
-The postcard is built as three distinct layers inside `.postcard`:
-
-1. **`.card-artwork`** — the original printed design (never edited; pointer
-   events pass through)
-2. **`.card-content`** — the editable sender/recipient addresses and the six
-   PIN digits
-3. **`.card-guides`** — optional calibration aids, hidden by default: the
-   guides *and* the mm ruler that runs along the card's top and left edges
-   (it looked like a second scrollbar, so it now only appears with the
-   "Show guides" button)
-
-### Technology
-
-- HTML + CSS + vanilla JavaScript — no framework, no build step
-- Storage: browser `localStorage` + export/import of a JSON settings file
-- No database, no cloud service, no paid APIs, no dependencies
-
-### Screen scaling (documented DPI)
-
-The preview uses CSS `mm` units directly. The browser converts them at the
-CSS standard resolution of **96 DPI**: `1 mm = 96 / 25.4 = 3.7795` screen
-pixels. The window scaling is a CSS `transform: scale()` only — it never
-changes the underlying millimetre geometry, so the preview always shows the
-true 143 × 93 mm proportions. The **Actual size** button switches the
-preview to true physical size for comparison against the real card.
-
-## Settings and Privacy
-
-- **Save settings** stores the form in this browser (`localStorage`).
-- **Export JSON** downloads `postcard-printer-settings.json`
-  (backup/migration; placement settings only, never image data).
-- **Import JSON** restores from that file; invalid files fall back safely
-  to defaults — malformed data never breaks the app.
-- **Clear saved data** (Print tab) removes everything stored in this
-  browser.
-
-Everything is stored locally in your browser — no network requests, no
-external services, no uploads:
-
-- **Saved:** address fields, fonts, calibration offsets, message, image
-  *placement settings*, the "Print image" flag, and message templates.
-- **Never saved:** uploaded image pixels. Images live only in the current
-  browser session and must be re-uploaded after reopening the app.
-
-## Tests
-
-With Node.js installed (no `npm install` needed):
-
-```powershell
-node --check js\layout.js
-node --check js\settings.js
-node --check js\address.js
-node --check js\addressbook.js
-node --check js\preview.js
-node --check js\app.js
-node --check server.js
-node tests\layout.test.js
-node tests\address.test.js
-node tests\html.smoke.test.js
-node tests\addressbook.test.js
-node tests\preview.visual.test.js
-node tests\e2e.test.js
-node tests\addressbook.e2e.test.js
+```bash
+node tests/preview.visual.test.js
+node tests/e2e.test.js
+node tests/addressbook.e2e.test.js
+node tests/edge.e2e.test.js
 ```
 
-Run the browser suites (visual, e2e, address book e2e) one at a time — each
-starts its own server.
+Each browser suite starts its own server. Run them one at a time.
 
-| Suite | Checks | Needs a browser |
-| --- | --- | --- |
-| `layout.test.js` | 42 — card size, sections, divider, PIN row/boxes, 5-line capacity vs 4 printed rules, recipient lines and margins, artwork bounds, back layout | no |
-| `address.test.js` | 37 — field assembly, omitted optionals, multi-line fields, measured wrapping, word preservation, too-wide words, fit status, Fit-text behaviour | no |
-| `html.smoke.test.js` | 18 — element ids (unique), file references, defaults, print button, no image persistence, settings upgrade | no |
-| `addressbook.test.js` | 103 — contacts, duplicates, persistence, corrupt data, CSV parse/round-trip/import warnings, PIN validation | no |
-| `preview.visual.test.js` | 197 — rendered geometry, artwork, three print modes, side selection, fitting, image editing, address book, live calibration summary, preview-vs-print position, offset clamping, char hints | yes |
-| `e2e.test.js` | 91 — full workflow on a real server + Edge: HTTP behaviour, page/panel scrolling, forms, fitting, back image, templates, 5-line capacity, card PIN typing, font toggles, rulers, calibration, all print modes/sides, settings persistence, export/import | yes |
-| `addressbook.e2e.test.js` | 67 — save/load/edit/delete, exact card round-trip (including addresses typed straight onto the card), CSV import/export, reload, corrupt storage | yes |
-| `edge.e2e.test.js` | 14 — failure paths: non-image upload, corrupt settings import, HTML/unicode injection into an address, 600-char line, rapid tab switching, corrupt settings + address-book storage, no page/console errors | yes |
+---
 
-**Total: 569 checks, 0 failures.**
+## 📂 Project Structure
 
-`layout.test.js` verifies: card size, section widths summing to 143 mm, the
-48 mm PIN row, edge-to-edge PIN boxes with zero gaps, the six boxes fitting
-the 69 mm recipient section, address-line positions, that the 5th address
-line clears the PIN row while only 4 rules print, and that every
-printed-artwork element stays inside the card and clear of the measured
-geometry.
-
-`html.smoke.test.js` verifies (without a browser) that every element id
-referenced from the JavaScript exists in `index.html`, every referenced
-file exists, the Print button is present and enabled, and the default
-address/PIN values are intact.
-
-`e2e.test.js` starts its own instance of the real `server.js` on a free
-port, verifies the HTTP behaviour (types, 404, traversal protection, 405,
-no-store headers), then drives the complete user workflow in headless Edge
-and saves screenshots to `tests\e2e-shots\` (including true print-media
-captures of card, overlay and calibration output) for eyeball review.
-
-The visual test measures the rendered card geometry in the browser
-(143 × 93 mm, divider at 74 mm, recipient block at 80 mm / 28.8 mm, PIN row
-48 mm wide and touching, 9 pt font), verifies the printed artwork layer and
-that the calibration guides are hidden by default, and saves
-`tests\preview-full.png` and `tests\postcard.png` for eyeball review. It
-divides out the preview's CSS scale factor, so it verifies the true
-millimetre geometry rather than the window-fitted size.
-
-## Project Structure
-
-```
+```text
 postcard-printer/
-├── index.html                  # The application window
-├── server.js                   # Localhost dev server (Node http module, no dependencies)
-├── css/style.css               # Styling; all geometry in mm custom properties
-├── js/layout.js                # ALL physical measurements (mm) — single source of truth
-├── js/address.js               # Address assembly, measured wrapping, fit status
-├── js/addressbook.js           # Contacts, persistence, CSV import/export
-├── js/preview.js               # Applies layout to the DOM, scales the preview
-├── js/settings.js              # Load/save settings (localStorage + JSON import/export)
-├── js/app.js                   # Wires the form, preview and storage together
-├── tests/layout.test.js        # Automated layout checks (Node.js)
-├── tests/address.test.js       # Address assembly + fit checks (Node.js)
-├── tests/addressbook.test.js   # Address book unit checks (Node.js)
-├── tests/html.smoke.test.js    # HTML/JS consistency checks (Node.js)
-├── tests/preview.visual.test.js# Playwright visual test (optional)
-├── tests/e2e.test.js           # Playwright end-to-end workflow (optional)
-├── tests/addressbook.e2e.test.js # Playwright address book e2e (optional)
-└── README.md
+│
+├── index.html
+├── server.js
+│
+├── css/
+│   └── style.css
+│
+├── js/
+│   ├── layout.js
+│   ├── settings.js
+│   ├── address.js
+│   ├── addressbook.js
+│   ├── preview.js
+│   └── app.js
+│
+├── tests/
+│   ├── layout.test.js
+│   ├── address.test.js
+│   ├── html.smoke.test.js
+│   ├── addressbook.test.js
+│   ├── preview.visual.test.js
+│   ├── e2e.test.js
+│   ├── addressbook.e2e.test.js
+│   └── edge.e2e.test.js
+│
+├── INSTALL_POSTCARD_PRINTER.bat
+├── START_POSTCARD_PRINTER.bat
+├── ALL-IN-ONE SETUP CMD.txt
+│
+├── README.md
+└── SECURITY.md
 ```
 
-## Layout Specification
+---
 
-All physical measurements live in one file — `js/layout.js` — in
-millimetres:
+## 📐 Layout Specification
 
-| Item | Value |
+All physical measurements are defined in `js/layout.js`.
+
+| Component | Measurement |
 | --- | --- |
-| Card | 143 mm × 93 mm |
-| Sender section | 74 mm wide |
-| Recipient section | 69 mm wide (74 + 69 = 143) |
-| Divider | 74 mm from the card's left edge |
-| Default font | 13 pt (adjustable 6–20 pt) |
-| Recipient address | 5 lines accepted (text top 28.8 mm so each line sits on its ruled line; **4 printed rules** at 34/40.5/47/53.5, ruler-measured: first rule 6 mm below the stamp, 6.5 mm apart — the 5th line prints below the last rule), PIN row 34 mm below the stamp |
-| Recipient margins | 6 mm left / 6 mm right |
-| PIN boxes | 6 boxes, 8 mm × 6 mm, **zero gaps** (row = 48 mm) |
-| First PIN box | 17 mm from the recipient section's left edge (= 91 mm from card left) |
-| PIN row top | 62 mm from the card top |
-| PIN default | *(none — the app ships no sample address or PIN)* |
+| Postcard width | 143 mm |
+| Postcard height | 93 mm |
+| Sender section | 74 mm |
+| Recipient section | 69 mm |
+| Divider position | 74 mm |
+| Default font size | 13 pt |
+| Adjustable font range | 6–20 pt |
+| Recipient address capacity | 5 lines |
+| Printed address rules | 4 |
+| Recipient left margin | 6 mm |
+| Recipient right margin | 6 mm |
+| PIN boxes | 6 |
+| Individual PIN box | 8 × 6 mm |
+| PIN row width | 48 mm |
+| PIN row top | 62 mm |
 
-**Sender coordinates are provisional** (8 mm from the left, 8 mm from the
-top) because they have not been measured on a real card. The provisional
-region is shown by the dashed box in the **guides layer** (click "Show
-guides"); it is no longer drawn in the normal preview. The value lives in
-one place: `js/layout.js` → `sender`. Set
-`sender.coordinatesConfirmed = true` once measured.
+Some artwork and sender‑position measurements remain provisional and are documented in the source code.
 
-## Calibration
+---
 
-The **Calibration offsets** panel shifts the editable content (sender,
-recipient, PIN digits) in millimetres, independently on X and Y. The
-printed artwork and the base measurements never move — offsets only correct
-where your typed content lands relative to the printed card. Offsets are
-saved with the other settings and can be reset to 0 with one click.
+## ⚠️ Known Limitations
 
-## Known Limitations
+- Printer hardware margins cannot be controlled through CSS.
+- Printer drivers may introduce scaling.
+- Artwork positions are approximations based on postcard photographs.
+- The stamp portrait is a generic silhouette, not official artwork.
+- Sender coordinates are provisional until measured against physical stock.
+- PIN digit sizing is configurable and provisional.
+- A fifth recipient line is supported but has no corresponding printed rule.
+- Uploaded images must be re‑uploaded after reopening the application.
+- Automatic duplex printing is not guaranteed.
+- Browser zoom changes the apparent screen size, not the underlying millimetre measurements.
 
-1. **Printer hardware margins are not controllable from CSS.** The driver
-   may add unprintable margins or re-scale; the physical calibration test
-   on ordinary paper is the only way to confirm real alignment.
-2. **Background colour needs "background graphics" enabled** in the print
-   dialog; otherwise the card prints without its yellow paper.
-3. **Layout matches, ink may not.** Screen and print rules place every
-   element at the same millimetre position — measured to 0.000 mm. What
-   differs afterwards is the printer's own margin, not the page layout.
-4. **Artwork is approximate** — positions were traced from a photograph,
-   not measured. Adjust them in `js/layout.js` → `artwork` if your card
-   differs. The stamp portrait is a generic silhouette, not the official
-   artwork. The **measured address/PIN geometry is the source of truth**
-   and is never derived from the photograph.
-5. **Sender position unmeasured** — provisional values, adjustable with the
-   calibration controls.
-6. **PIN digit size (14 pt) is provisional** — configurable in
-   `js/layout.js`.
-7. **The 5th recipient line has no printed rule** — the card stock has
-   four, and the 5th line prints below the last one, close to the PIN row.
-   Four lines keep the intended look.
-8. **Browser zoom** changes the apparent screen size; the physical mm
-   values are unaffected — use the **Actual size** button when comparing on
-   screen.
-9. **Automatic duplex is not claimed** — printing both sides means
-   reinserting the card manually unless your driver supports it and you
-   have tested it.
+The project prioritises measured address and PIN geometry over artwork approximation.
 
-## License
+---
 
-Free and open-source — use, study, and modify freely.
+## 🛠️ Development & Contributions
+
+Contributions, bug reports, testing feedback and improvement suggestions are welcome.
+
+If you find an issue:
+
+1. Check the existing GitHub Issues.
+2. Include your Windows version and browser.
+3. Describe the steps needed to reproduce the problem.
+4. Include screenshots or calibration measurements when relevant.
+
+Please avoid including real personal addresses or PIN codes in public bug reports.
+
+---
+
+## 📜 License
+
+Free and open‑source.
+
+Use, study, modify and improve the application freely.
+
+---
+
+## ❤️ Acknowledgements
+
+Created as a small utility to make designing and printing Indian inland postcards easier, more accurate and more accessible.
+
+Built with a focus on simplicity, precision, local operation and user privacy.
+
+**Made for the simple joy of sending a postcard. 🇮🇳**
+
+---
+
+<p align="center">
+
+**Indian Postcard Printer**
+
+_Your address. Your postcard. Your printer._
+
+</p>
