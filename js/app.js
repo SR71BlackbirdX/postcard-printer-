@@ -87,7 +87,7 @@
     'printBtn', 'printHelp', 'printNowBtn', 'printCancelBtn', 'offsetSummary',
     'clearDataBtn',
     // Shared
-    'refreshBtn', 'refreshBackBtn', 'saveBtn', 'exportBtn', 'importBtn', 'importFile',
+    'refreshBtn', 'refreshBackBtn', 'saveBtn', 'saveCalibBtn', 'exportBtn', 'importBtn', 'importFile',
     'fontFamily', 'fontBold', 'fontItalic', 'fontUnderline',
     'status', 'previewPane', 'previewScaler', 'postcard', 'backcard',
     'calibSheet', 'backImageCanvas'
@@ -1311,6 +1311,11 @@
     // Offsets + image controls update live.
     Object.keys(OFFSET_KEYS).forEach((id) => {
       document.getElementById(id).addEventListener('input', updatePreview);
+      // Committing a value persists it, so a reload keeps the calibration.
+      document.getElementById(id).addEventListener('change', () => {
+        readForm();
+        saveSettings(state);
+      });
     });
     [el.backOffX, el.backOffY].forEach((i) => i.addEventListener('input', updatePreview));
     ['imgX', 'imgY', 'imgRotate', 'cropLeft', 'cropTop'].forEach((id) =>
@@ -1336,6 +1341,15 @@
     // Fit text (explicit).
     el.fitTextBtn.addEventListener('click', fitText);
 
+    // Explicit save, for when the user wants to confirm the values are stored.
+    el.saveCalibBtn.addEventListener('click', () => {
+      readForm();
+      const ok = saveSettings(state);
+      setStatus(ok ? 'Calibration offsets saved in this browser.'
+                   : 'Could not save (browser storage blocked) — use Export JSON instead.',
+        ok ? '' : 'error');
+    });
+
     // Reset calibration offsets to the defaults (PIN Y = +0.4 mm).
     el.resetCalibBtn.addEventListener('click', () => {
       Object.keys(OFFSET_KEYS).forEach((id) => {
@@ -1344,7 +1358,11 @@
           fmtMm(id === 'offPinYMm' ? v - PIN_Y_BASE_MM : v);
       });
       updatePreview();
-      setStatus('Calibration offsets reset to defaults (PIN Y = 0.4 mm, shown as 0).');
+      // Persist the cleared values, otherwise a reload restores the old ones.
+      const ok = saveSettings(state);
+      setStatus(ok ? 'Calibration offsets cleared and saved.'
+                   : 'Offsets cleared, but could not save (browser storage blocked).',
+        ok ? '' : 'error');
     });
 
     // Guides and actual size.
