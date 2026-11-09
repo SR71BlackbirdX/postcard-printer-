@@ -570,6 +570,23 @@ const round = (n) => Math.round(n * 100) / 100;
     await page.fill('#recipientFontPt', '9');
     await page.waitForTimeout(150);
 
+    // ── Char hints follow the font size ────────────────────────────
+    // They derive from the font size but were only computed at load, so
+    // changing the size (or running Fit text) left them showing old values.
+    await page.fill('#recipientFontPt', '15');
+    await page.waitForTimeout(150);
+    const hintWide = await page.evaluate(() =>
+      document.getElementById('recipientCharHint').textContent);
+    await page.fill('#recipientFontPt', '8');
+    await page.waitForTimeout(150);
+    const hintNarrow = await page.evaluate(() =>
+      document.getElementById('recipientCharHint').textContent);
+    check('Char hints: follow the font size instead of freezing at load',
+      hintWide !== hintNarrow && /About \d+ characters/.test(hintNarrow),
+      hintWide + ' || ' + hintNarrow);
+    await page.fill('#recipientFontPt', '9');
+    await page.waitForTimeout(150);
+
     // ── Address stays inside its physical area ───────────────────
     await page.fill('#rName', 'Ravi Kumar');
     await page.fill('#rHouse', '12 MG Road');
@@ -581,6 +598,81 @@ const round = (n) => Math.round(n * 100) / 100;
       outside === 'Outside printable area', outside);
     await page.fill('#offRecipYMm', '0');
     await page.waitForTimeout(150);
+
+    // ── Calibration must be truthful: summary + paper ─────────────
+    // Repro: the offset fields live on the Front tab, so the summary was
+    // only ever refreshed when activeTab === 'print' — it never changed.
+    const posMm = () => page.evaluate(() => {
+      const card = document.getElementById('postcard');
+      const blk = document.getElementById('recipientBlock');
+      const c = card.getBoundingClientRect();
+      const b = blk.getBoundingClientRect();
+      const scale = c.width / card.offsetWidth || 1; // divides out preview zoom
+      return {
+        x: (b.left - c.left) / scale * 25.4 / 96,
+        y: (b.top - c.top) / scale * 25.4 / 96
+      };
+    });
+    /** Set offset X, then read where the block lands on the printed page. */
+    const printPosAt = async (v) => {
+      await page.fill('#offRecipXMm', String(v));
+      await page.waitForTimeout(120);
+      const onScreen = await posMm();
+      await page.emulateMedia({ media: 'print' });
+      await page.waitForTimeout(120);
+      const onPaper = await posMm();
+      await page.emulateMedia({ media: 'screen' });
+      await page.waitForTimeout(60);
+      return { onScreen, onPaper };
+    };
+
+    await page.fill('#offRecipXMm', '8');
+    await page.waitForTimeout(150);
+    const sumText = await page.evaluate(() =>
+      document.getElementById('offsetSummary').innerText.replace(/\n/g, ' '));
+    check('Calibration: Active calibration summary updates from the Front tab',
+      /To \(front\)\s*X \+8 mm/.test(sumText), sumText.slice(0, 140));
+
+    const at8 = { onScreen: await posMm(), onPaper: null };
+    await page.emulateMedia({ media: 'print' });
+    await page.waitForTimeout(120);
+    at8.onPaper = await posMm();
+    await page.emulateMedia({ media: 'screen' });
+    await page.waitForTimeout(60);
+
+    // The preview must be the real geometry, not a mock.
+    const gapX = Math.abs(at8.onScreen.x - at8.onPaper.x);
+    const gapY = Math.abs(at8.onScreen.y - at8.onPaper.y);
+    check('Calibration: preview and print place the block at the same mm',
+      gapX < 0.05 && gapY < 0.05, 'dx=' + round(gapX) + ' dy=' + round(gapY));
+
+    // And the offset has to reach the paper, not just the preview.
+    const zero = await printPosAt(0);
+    const eight = await printPosAt(8);
+    const moved = Math.abs(eight.onPaper.x - zero.onPaper.x);
+    check('Calibration: the 8 mm offset is carried into print',
+      Math.abs(moved - 8) < 0.3, round(moved) + ' mm');
+    await page.fill('#offRecipXMm', '0');
+    await page.waitForTimeout(120);
+
+    // ── Live clamping and load-time sanitising must agree ──────────
+    // A typo like 400 used to apply as 400 on screen and come back as 20
+    // after a reload. Both paths must clamp identically, and stay above
+    // the ~30 mm the "Outside printable area" guard above needs to fire.
+    const loadClamped = await page.evaluate(() =>
+      sanitizeSettings({ offsets: { recipientX: 400, recipientY: -400 } }).offsets);
+    check('Calibration: load-time sanitiser clamps offsets to ±50 mm',
+      loadClamped.recipientX === 50 && loadClamped.recipientY === -50,
+      JSON.stringify(loadClamped));
+
+    await page.fill('#offRecipXMm', '400');
+    await page.waitForTimeout(150);
+    const liveClamped = await page.evaluate(() =>
+      document.getElementById('recipientBlock').style.transform);
+    check('Calibration: typing 400 mm applies the same 50 mm clamp',
+      /translate\(50mm/.test(liveClamped), liveClamped);
+    await page.fill('#offRecipXMm', '0');
+    await page.waitForTimeout(120);
 
     // ── Back image: upload, move, resize, crop, rotate, toggle ────
     await page.click('#tabBackBtn');

@@ -309,8 +309,10 @@ button:disabled {
   width: var(--card-w);
   height: var(--card-h);
   background: var(--paper);           /* cream inland postcard paper */
-  border: 1px solid #e0cf9f;
-  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.22);
+  /* The card edge is an inset shadow, NOT a border: a border shrinks the
+     padding box, so every layer would sit 1px inside where it prints.
+     Print removes box-shadow anyway, so preview and paper then agree. */
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.22), inset 0 0 0 1px #e0cf9f;
   overflow: hidden;
 }
 
