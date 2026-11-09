@@ -10,65 +10,68 @@ Create beautifully formatted postcards with structured sender and recipient addr
 
 ---
 
-## 🚀 Project Status
+A small, free, open-source Windows utility for composing an Indian inland
+postcard (143 × 93 mm): front (addresses + PIN) and back (blank message
+side, optional image), with direct exact-size printing.
 
-**Stage 7 — Structured Address Forms & Advanced Printing**
+**Current status: Stage 7** — structured address forms with measured text
+fitting, an optional back-side image editor, correct Front / Back /
+Front-and-Back print page selection, and the text-only overlay +
+calibration sheet from Stage 5.
 
-The application currently supports:
+## Table of Contents
 
-- Structured sender and recipient address forms.
-- Automatic text wrapping and measured text fitting.
-- Editable postcard front and back.
-- Optional back-side image editor.
-- Address book with CSV import and export.
-- Three printing modes.
-- Independent front/back calibration.
-- JSON settings backup and restore.
-- Automated unit, visual and end-to-end testing.
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Printing](#printing)
+- [How It Works](#how-it-works)
+- [Settings and Privacy](#settings-and-privacy)
+- [Tests](#tests)
+- [Project Structure](#project-structure)
+- [Layout Specification](#layout-specification)
+- [Calibration](#calibration)
+- [Known Limitations](#known-limitations)
+- [License](#license)
 
-The project is actively developed and welcomes testing, feedback and contributions.
+## Features
 
----
+- **Faithful card design** — reproduces the yellow 50 paise inland postcard
+  (Atal Bihari Vajpayee, AKAM "Azadi ka Amrit Mahotsav" 2022 issue) with
+  cream paper, dark teal ink, bilingual heading, stamp, AKAM logo, sorter
+  bars and four printed ruled address lines.
+- **Structured address forms** — Name, House no. & street, Area / village /
+  town, District & state plus PIN for both sender and recipient. Every
+  field accepts multiple lines; empty optional fields are omitted and
+  labels never print.
+- **Smart text fitting** — words wrap to the measured 57 mm width (never a
+  character count), words are never cut in half, and the five-line limit is
+  enforced with a visible status: **Fits**, **Too many lines**, **Line too
+  wide** or **Outside printable area**. A **Fit text** action picks the
+  largest size in 6–20 pt that fits and tells you what it changed.
+- **Nine card fonts** with bold / italic / underline, per-address font
+  sizes, and calibration offsets per side.
+- **Address book** — save senders and recipients; a saved contact stores
+  exactly what the card shows, so loading it back reproduces the same card.
+  CSV import/export with duplicate and PIN validation warnings. The CSV
+  columns are `Contact,Name,House,Building,Street,Area,City,District,State,PIN`
+  (`Contact` is the display name); a header row is recommended and its order
+  may vary, a headerless file in the nine field columns also imports, quotes
+  and line breaks inside values are supported, and export adds a UTF-8 BOM.
+- **Back-side image** — upload PNG/JPEG/WebP and control position, size
+  (aspect ratio locked), rotation and crop. Images stay in the browser
+  session only; pixel data is never saved or uploaded.
+- **Three print modes** — text overlay, full card at exact 143 × 93 mm, or
+  a calibration sheet.
+- **100 % local** — no network requests, no external services, no
+  analytics. Everything lives in your browser's `localStorage`.
 
-## ✨ Features
+## Screenshots
 
-### 📮 Accurate Indian Postcard Layout
-
-Recreates the design of the Indian 50‑paise inland postcard, inspired by the Atal Bihari Vajpayee and Azadi Ka Amrit Mahotsav 2022 issue.
-
-- Physical postcard dimensions: **143 × 93 mm**.
-- Cream/yellow postcard appearance.
-- Bilingual heading and stamp artwork.
-- Sender and recipient sections.
-- Six PIN‑code boxes.
-- Four printed address guide lines.
-- Decorative artwork and sorting bars.
-
-The application separates the original postcard artwork from editable content, allowing addresses to be modified without disturbing the design.
-
-### ✍️ Smart Address Editor
-
-Enter sender and recipient details using structured fields:
-
-- Name
-- House number and street
-- Area, village or town
-- District and state
-- PIN code
-
-Additional capabilities:
-
-- Multi‑line address fields.
-- Single‑box address entry mode.
-- Direct editing on the postcard preview.
-- Automatic word wrapping based on measured text width.
-- Five‑line address capacity.
-- Automatic text‑fitting assistance.
-- Independent font sizes for each address.
-- Nine font families.
-- Bold, italic and underline formatting.
-
-**Smart text fitting** checks actual rendered text width instead of relying on character counts.
+| Front card | Full preview |
+| --- | --- |
+| ![Front of the postcard with addresses and PIN boxes](tests/postcard.png) | ![Full application preview](tests/preview-full.png) |
 
 The application reports whether an address fits, is too wide, contains too many lines or extends outside the printable area.
 
