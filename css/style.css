@@ -575,7 +575,9 @@ button:disabled {
   font-size: 0.85em;
   white-space: nowrap;
 }
-.flagsize input { width: 12mm; }
+/* Wide enough for two digits PLUS the number spinner: at 12mm the padding
+   and spinner reserve left ~5px for the value, so 16 clipped to "1(". */
+.flagsize input { width: 18mm; }
 
 /* Bold / italic / underline: three small checkboxes dressed as buttons. */
 .style-toggles {
