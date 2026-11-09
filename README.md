@@ -27,7 +27,7 @@ A small, free, open-source Windows utility for composing an Indian inland
 postcard (143 × 93 mm): front (addresses + PIN) and back (blank message
 side, optional image), with direct exact-size printing.
 
-**Current status: Stage 6** — structured address forms with measured text
+**Current status: Stage 7** — structured address forms with measured text, calibration fixes, and flag-width improvements
 fitting, an optional back-side image editor, correct Front / Back /
 Front-and-Back print page selection, and the text-only overlay +
 calibration sheet from Stage 5.
