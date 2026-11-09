@@ -378,7 +378,12 @@
     renderFront(state);
     renderBack(state);
     refreshOverrideBadge();
-    if (activeTab === 'print') refreshOffsetSummary();
+    // Always refresh: the offset fields live on the Front tab, so guarding
+    // this on activeTab === 'print' left the summary showing stale values.
+    refreshOffsetSummary();
+    // The hints derive from the font size, which only updatePreview sees —
+    // refreshing them here keeps them truthful after a size change or Fit.
+    refreshCharHints();
   }
 
   /* ── Fit text (explicit action — never automatic) ───────────────── */
